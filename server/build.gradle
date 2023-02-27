@@ -1,0 +1,12 @@
+plugins {
+  id 'org.apized.micronaut' version "$apizedVersion"
+}
+
+dependencies {
+  annotationProcessor 'io.micronaut.openapi:micronaut-openapi'
+  implementation 'com.auth0:java-jwt:4.3.0'
+}
+
+application {
+  mainClass.set("org.apized.sample.postgres.Application")
+}

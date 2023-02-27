@@ -1,0 +1,63 @@
+micronaut:
+  application:
+    name: Auth Server
+
+  server:
+    port: ${PORT:8080}
+
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
+      redoc:
+        paths: classpath:META-INF/swagger/views/redoc
+        mapping: /redoc/**
+
+endpoints:
+  all:
+    port: ${MANAGEMENT_PORT:8081}
+  health:
+    details-visible: ANONYMOUS
+    enabled: true
+    sensitive: false
+  info:
+    enabled: false
+  routes:
+    enabled: true
+    sensitive: false
+  threaddump:
+    enabled: false
+  flyway:
+    enabled: false
+  beans:
+    enabled: false
+  refresh:
+    enabled: false
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+
+netty:
+  default:
+    allocator:
+      max-order: 3
+
+datasources:
+  default:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:apized_auth}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASS:postgres}
+
+apized:
+  slug: auth
+
+auth:
+  domain: apized.org
+  duration: 3600
+  secret: boatymcboatface
