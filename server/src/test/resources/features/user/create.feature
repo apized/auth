@@ -12,4 +12,5 @@ Feature: Create users
     When I list the users
     Then the request succeeds
 
-  Scenario: TODO: Validations
+#  TODO
+  Scenario: Validations

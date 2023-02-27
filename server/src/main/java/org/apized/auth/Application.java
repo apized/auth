@@ -22,7 +22,7 @@ BLABLA
 """
   ),
   tags = {
-    @Tag(name = "Login", description = "The login tag"),
+    @Tag(name = "Token", description = "The token tag"),
     @Tag(name = "User", description = "The user tag"),
     @Tag(name = "Role", description = "The role tag")
   }

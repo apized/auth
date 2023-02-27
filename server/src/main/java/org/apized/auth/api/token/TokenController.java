@@ -1,16 +1,12 @@
-package org.apized.auth.api.login;
+package org.apized.auth.api.token;
 
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
-import io.micronaut.http.annotation.Body;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.*;
 import io.micronaut.http.cookie.SameSite;
 import io.micronaut.http.simple.cookies.SimpleCookie;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.tags.Tags;
 import jakarta.inject.Inject;
 import org.apized.auth.BCrypt;
 import org.apized.auth.DBUserResolver;
@@ -23,8 +19,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Introspected
 @Transactional
-@Controller("/login")
-public class LoginController {
+@Controller("/token")
+public class TokenController {
   @Inject
   UserService userService;
 
@@ -40,12 +36,12 @@ public class LoginController {
   @Post("/")
   @Operation(
     operationId = "Login",
-    tags = {"Login"},
-    summary = "username/password",
+    tags = {"Token"},
+    summary = "Login with username/password",
     description = """
          Login with a username/password pair
       """)
-  public User create(@Body PasswordLoginRequest login) {
+  public org.apized.core.security.model.User create(@Body PasswordLoginRequest login) {
     AtomicReference<User> resolvedUser = new AtomicReference<>();
     userService.findByUsername(login.getUsername()).ifPresentOrElse(user -> {
       if (BCrypt.checkpw(login.getPassword(), user.getPassword())) {
@@ -71,6 +67,39 @@ public class LoginController {
     }, () -> {
       throw new UnauthorizedException("Not authorized");
     });
-    return resolvedUser.get();
+    return userResolver.convertUser(resolvedUser.get());
+  }
+
+  @Get("/{jwt}")
+  @Operation(
+    operationId = "Redeem",
+    tags = {"Token"},
+    summary = "Redeem a token",
+    description = """
+      """)
+  public org.apized.core.security.model.User redeem(String jwt) {
+    return userResolver.getUser(jwt);
+  }
+
+  @Put("/{jwt}")
+  @Operation(
+    operationId = "Renew",
+    tags = {"Token"},
+    summary = "Renew a token",
+    description = """
+      """)
+  public org.apized.core.security.model.User renew(String jwt) {
+    org.apized.core.security.model.User user = userResolver.getUser(jwt);
+    String token = userResolver.generateToken(user, true);
+    HttpResponse.ok().cookie(
+      new SimpleCookie("apized_auth", token)
+        .path("/")
+        .maxAge(tokenDuration)
+        .domain(domain)
+        .httpOnly(true)
+        .sameSite(SameSite.None)
+        .secure(true)
+    );
+    return user;
   }
 }

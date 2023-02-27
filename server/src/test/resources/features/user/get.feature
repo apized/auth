@@ -1,9 +1,13 @@
 Feature: Get users
 
-  Scenario: TODO: Anonymous can get himself
+#  TODO
+  Scenario: Anonymous can get himself
 
-  Scenario: TODO: Anonymous can't get other users
+#  TODO
+  Scenario: Anonymous can't get other users
 
-  Scenario: TODO: Admin can get himself
+#  TODO
+  Scenario: Admin can get himself
 
-  Scenario: TODO: Admin can get other users
+#  TODO
+  Scenario: Admin can get other users

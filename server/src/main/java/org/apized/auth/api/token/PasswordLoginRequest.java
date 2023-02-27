@@ -1,4 +1,4 @@
-package org.apized.auth.api.login;
+package org.apized.auth.api.token;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.micronaut.serde.annotation.Serdeable;

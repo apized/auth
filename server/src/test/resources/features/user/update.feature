@@ -1,11 +1,16 @@
 Feature: Update users
 
-  Scenario: TODO: Anonymous can update his user
+#  TODO
+  Scenario: Anonymous can update his user
 
-  Scenario: TODO: Anonymous can't update other users
+#  TODO
+  Scenario: Anonymous can't update other users
 
-  Scenario: TODO: Admin can update his user
+#  TODO
+  Scenario: Admin can update his user
 
-  Scenario: TODO: Admin can update other users
+#  TODO
+  Scenario: Admin can update other users
 
-  Scenario: TODO: Validations
+#  TODO
+  Scenario: Validations

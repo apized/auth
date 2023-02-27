@@ -1,5 +1,4 @@
 Feature: Delete users
-
 #  TODO
   Scenario: Anonymous can't delete himself
 
