@@ -11,8 +11,13 @@
     <option name="WORKING_DIRECTORY" value="$MODULE_WORKING_DIR$" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="io.cucumber.core.cli.*" />
+        <option name="PATTERN" value="org.apized.auth.*" />
         <option name="ENABLED" value="true" />
+      </pattern>
+      <pattern>
+        <option name="PATTERN" value="org.apized.auth.Application" />
+        <option name="ENABLED" value="true" />
+        <option name="INCLUDE" value="false" />
       </pattern>
     </extension>
     <method v="2">

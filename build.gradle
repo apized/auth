@@ -4,11 +4,33 @@ plugins {
 
 subprojects {
   repositories {
+    maven {
+      url '../libs'
+    }
     mavenLocal()
     mavenCentral()
   }
 
   sourceCompatibility = 17
   targetCompatibility = 17
+
+  configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+      if (details.requested.name == 'micronaut-inject') {
+        details.useVersion '4.0.0-SNAPSHOT'
+        details.because 'Properties annotated with JPA transient should not be excluded from introspections by default'
+      }
+
+      if (details.requested.group == 'io.micronaut.data') {
+        details.useVersion '3.8.1-SNAPSHOT'
+        details.because 'Properties annotated with JPA transient should not be excluded from introspections by default'
+      }
+
+      if ([ 'micronaut-data-tx' ].contains(details.requested.name)) {
+        details.useVersion '3.4.3'
+        details.because "Properties annotated with JPA transient should not be excluded from introspections by default"
+      }
+    }
+  }
 }
 

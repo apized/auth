@@ -2,24 +2,31 @@ package org.apized.auth.api.token;
 
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.Introspected;
+import io.micronaut.core.bind.annotation.Bindable;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.*;
+import io.micronaut.http.cookie.CookieFactory;
 import io.micronaut.http.cookie.SameSite;
-import io.micronaut.http.simple.cookies.SimpleCookie;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.inject.Inject;
-import org.apized.auth.BCrypt;
-import org.apized.auth.DBUserResolver;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserService;
+import org.apized.auth.security.AuthConverter;
+import org.apized.auth.security.BCrypt;
+import org.apized.auth.security.DBUserResolver;
+import org.apized.core.ApizedConfig;
+import org.apized.core.context.ApizedContext;
+import org.apized.core.error.exception.ForbiddenException;
 import org.apized.core.error.exception.UnauthorizedException;
 
 import javax.transaction.Transactional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Optional;
+import java.util.UUID;
 
 @Introspected
 @Transactional
-@Controller("/token")
+@Controller("/tokens")
 public class TokenController {
   @Inject
   UserService userService;
@@ -27,13 +34,16 @@ public class TokenController {
   @Inject
   DBUserResolver userResolver;
 
-  @Value("${auth.domain}")
-  String domain;
+  @Inject
+  ApizedConfig config;
 
-  @Value("${auth.duration}")
+  @Value("${auth.cookie.domain}")
+  String cookieDomain;
+
+  @Value("${auth.token.duration}")
   int tokenDuration;
 
-  @Post("/")
+  @Post
   @Operation(
     operationId = "Login",
     tags = {"Token"},
@@ -41,22 +51,13 @@ public class TokenController {
     description = """
          Login with a username/password pair
       """)
-  public org.apized.core.security.model.User create(@Body PasswordLoginRequest login) {
-    AtomicReference<User> resolvedUser = new AtomicReference<>();
-    userService.findByUsername(login.getUsername()).ifPresentOrElse(user -> {
+  public HttpResponse<Token> login(@Body PasswordLoginRequest login) {
+    Optional<User> optionalUser = userService.findByUsername(login.getUsername());
+    if (optionalUser.isPresent()) {
+      User user = optionalUser.get();
       if (BCrypt.checkpw(login.getPassword(), user.getPassword())) {
         if (user.isVerified()) {
-          resolvedUser.set(user);
-          String token = userResolver.generateToken(userResolver.convertUser(resolvedUser.get()), true);
-          HttpResponse.ok().cookie(
-            new SimpleCookie("apized_auth", token)
-              .path("/")
-              .maxAge(tokenDuration)
-              .domain(domain)
-              .httpOnly(true)
-              .sameSite(SameSite.None)
-              .secure(true)
-          );
+          return getHttpResponse(AuthConverter.convertAuthUserToApizedUser(user));
         } else {
           // todo send verification email
           throw new UnauthorizedException("Email verification pending");
@@ -64,21 +65,57 @@ public class TokenController {
       } else {
         throw new UnauthorizedException("Not authorized");
       }
-    }, () -> {
+    } else {
       throw new UnauthorizedException("Not authorized");
-    });
-    return userResolver.convertUser(resolvedUser.get());
+    }
+  }
+
+  @Post("/{userId}")
+  @Operation(
+    operationId = "Create",
+    tags = {"Token"},
+    summary = "Create token for user",
+    description = """
+         Generate a token for the given user
+      """)
+  public Token create(UUID userId, @QueryValue(defaultValue = "true") boolean expiring) {
+    if (
+      (expiring && ApizedContext.getSecurity().getUser().getId().equals(userId)) ||
+        ApizedContext.getSecurity().getUser().isAllowed("auth.token.create")
+    ) {
+      return new Token(
+        null,
+        userResolver.generateToken(AuthConverter.convertAuthUserToApizedUser(userService.get(userId)), expiring)
+      );
+    } else {
+      throw new ForbiddenException("Not allowed to generate non-expiring tokens for other users", "auth.token.create");
+    }
+  }
+
+  @Get("/")
+  @Operation(
+    operationId = "Redeem self token",
+    tags = {"Token"},
+    summary = "Redeem self token",
+    description = """
+      """)
+  public org.apized.core.security.model.User self() {
+    return ApizedContext.getSecurity().getUser();
   }
 
   @Get("/{jwt}")
   @Operation(
-    operationId = "Redeem",
+    operationId = "Redeem a token",
     tags = {"Token"},
     summary = "Redeem a token",
     description = """
       """)
   public org.apized.core.security.model.User redeem(String jwt) {
-    return userResolver.getUser(jwt);
+    org.apized.core.security.model.User user = userResolver.getUser(jwt);
+    if (!ApizedContext.getSecurity().getUser().isAllowed("auth.token.redeem")) {
+      throw new ForbiddenException("Not allowed to redeem tokens", "auth.token.redeem");
+    }
+    return user;
   }
 
   @Put("/{jwt}")
@@ -88,18 +125,33 @@ public class TokenController {
     summary = "Renew a token",
     description = """
       """)
-  public org.apized.core.security.model.User renew(String jwt) {
+  public HttpResponse<Token> renew(String jwt) {
     org.apized.core.security.model.User user = userResolver.getUser(jwt);
-    String token = userResolver.generateToken(user, true);
-    HttpResponse.ok().cookie(
-      new SimpleCookie("apized_auth", token)
-        .path("/")
-        .maxAge(tokenDuration)
-        .domain(domain)
-        .httpOnly(true)
-        .sameSite(SameSite.None)
-        .secure(true)
+    if (
+      !user.getId().equals(ApizedContext.getSecurity().getUser().getId()) &&
+        !ApizedContext.getSecurity().getUser().isAllowed("auth.token.renew")
+    ) {
+      throw new ForbiddenException("Not allowed to renew tokens for other users", "auth.token.renew");
+    }
+    return getHttpResponse(user);
+  }
+
+  private MutableHttpResponse<Token> getHttpResponse(org.apized.core.security.model.User user) {
+    Token token = new Token(
+      null,
+      userResolver.generateToken(user, true)
     );
-    return user;
+    return HttpResponse
+      .ok()
+      .body(token)
+      .cookie(
+        CookieFactory.INSTANCE.create(config.getCookie(), token.getJwt())
+          .path("/")
+          .maxAge(tokenDuration)
+          .domain(cookieDomain)
+          .httpOnly(true)
+          .sameSite(SameSite.None)
+          .secure(true)
+      );
   }
 }

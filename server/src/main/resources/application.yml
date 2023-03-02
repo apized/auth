@@ -58,6 +58,8 @@ apized:
   slug: auth
 
 auth:
-  domain: apized.org
-  duration: 3600
-  secret: boatymcboatface
+  token:
+    duration: ${AUTH_DURATION:3600}
+    secret: ${AUTH_SECRET:boatymcboatface}
+  cookie:
+    domain: ${AUTH_DOMAIN:apized.org}

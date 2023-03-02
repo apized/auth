@@ -18,6 +18,8 @@ package org.apized.auth.integration
 
 
 import io.micronaut.http.annotation.Controller
+import jakarta.inject.Inject
+import org.apized.auth.security.DBUserResolver
 import org.apized.micronaut.test.integration.MicronautTestController
 
 import javax.transaction.Transactional

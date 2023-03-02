@@ -13,7 +13,7 @@ import java.util.UUID;
 @Serdeable
 public class PasswordLoginRequest implements Model {
   @JsonIgnore
-  private UUID id;
+  private UUID id = UUID.randomUUID();
 
   /**
    * The username of the user to log in with.

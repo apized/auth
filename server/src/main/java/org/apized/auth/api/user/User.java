@@ -7,24 +7,27 @@ import io.micronaut.data.model.DataType;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.*;
 import lombok.*;
-import org.apized.auth.BCrypt;
 import org.apized.auth.api.role.Role;
+import org.apized.core.model.Action;
 import org.apized.core.model.Apized;
 import org.apized.core.model.BaseModel;
 
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
 @Entity
 @Serdeable
-@Apized(extensions = {UserRepositoryExtension.class})
+@NoArgsConstructor
+@AllArgsConstructor
+@Apized(
+  operations = {Action.LIST, Action.GET, Action.CREATE, Action.UPDATE},
+  extensions = {UserRepositoryExtension.class}
+)
 public class User extends BaseModel {
 
   /**
@@ -32,12 +35,14 @@ public class User extends BaseModel {
    */
   @NotNull
   @Email
+  @Size(min = 3)
   protected String username;
 
   /**
    * The name of this user.
    */
-  @NotBlank
+  @NotNull
+  @Size(min = 2)
   protected String name;
 
   /**
@@ -60,7 +65,7 @@ public class User extends BaseModel {
   /**
    * List of roles associated with this user. Permissions of these roles will apply to this user.
    */
-  @ManyToMany
+  @ManyToMany(cascade = CascadeType.ALL)
   @JoinTable(
     name = "users_roles",
     joinColumns = @JoinColumn(name = "users_id"),
@@ -74,14 +79,4 @@ public class User extends BaseModel {
 
   @JsonIgnore
   String passwordResetCode;
-
-  @SneakyThrows
-  public void setPassword(String password) {
-    if (password != null && !password.isBlank()) {
-      this.password = BCrypt.hashpw(password, BCrypt.gensalt());
-      if (password.length() < 8) {
-        this.password = "invalid";
-      }
-    }
-  }
 }

@@ -1,7 +1,7 @@
 Feature: Role permission granting
 
 #  TODO
-  Scenario: User can grants permission he has to role
+  Scenario: User can grant permission he has to role
 
 #  TODO
   Scenario: User can grant sub-permission to Role

@@ -1,4 +1,4 @@
-package org.apized.auth;
+package org.apized.auth.security;
 
 // Copyright (c) 2006 Damien Miller <djm@mindrot.org>
 //

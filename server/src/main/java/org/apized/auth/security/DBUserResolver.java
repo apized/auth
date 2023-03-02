@@ -1,17 +1,22 @@
-package org.apized.auth;
+package org.apized.auth.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.MissingClaimException;
+import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.runtime.event.annotation.EventListener;
 import jakarta.inject.Singleton;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apized.auth.api.role.Role;
 import org.apized.auth.api.role.RoleRepository;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserRepository;
+import org.apized.core.ApizedConfig;
 import org.apized.core.error.exception.UnauthorizedException;
 import org.apized.core.security.MemoryUserResolver;
 import org.apized.core.security.UserResolver;
@@ -24,26 +29,32 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Singleton
 @Replaces(MemoryUserResolver.class)
 public class DBUserResolver implements UserResolver {
 
   final static private String issuer = "apized";
   private final UserRepository userRepository;
+  private ApplicationContext applicationContext;
   private RoleRepository roleRepository;
   private final int tokenDuration;
   private String domain;
   private final Algorithm algorithm;
   private final JWTVerifier verifier;
+
+  @Getter
   private Role defaultRole;
 
   DBUserResolver(
+    ApplicationContext applicationContext,
     UserRepository userRepository,
     RoleRepository roleRepository,
-    @Value("${auth.secret}") String secret,
-    @Value("${auth.duration}") int duration,
-    @Value("${auth.domain}") String domain
+    @Value("${auth.token.secret}") String secret,
+    @Value("${auth.token.duration}") int duration,
+    @Value("${auth.cookie.domain}") String domain
   ) {
+    this.applicationContext = applicationContext;
     this.roleRepository = roleRepository;
     this.tokenDuration = duration;
     this.userRepository = userRepository;
@@ -53,6 +64,8 @@ public class DBUserResolver implements UserResolver {
     verifier = JWT.require(algorithm)
       .withIssuer(issuer)
       .withAudience(issuer)
+      .withClaimPresence("iat")
+      .withClaimPresence("sub")
       .build();
   }
 
@@ -69,13 +82,13 @@ public class DBUserResolver implements UserResolver {
         throw new UnauthorizedException("Not authorized");
       }
 
-      return convertUser(user.get());
+      return AuthConverter.convertAuthUserToApizedUser(user.get());
     } else {
       return new org.apized.core.security.model.User(
-        null,
+        UUID.randomUUID(),
         "anonymous@apized.org",
         "Anonymous",
-        List.of(convertRole(defaultRole)),
+        List.of(AuthConverter.convertAuthRoleToApizedRole(defaultRole)),
         List.of(),
         List.of()
       );
@@ -85,7 +98,7 @@ public class DBUserResolver implements UserResolver {
   @Override
   public org.apized.core.security.model.User getUser(UUID userId) {
     Optional<User> user = userRepository.get(userId);
-    return user.map(this::convertUser).orElse(null);
+    return user.map(AuthConverter::convertAuthUserToApizedUser).orElse(null);
   }
 
   @Override
@@ -111,41 +124,20 @@ public class DBUserResolver implements UserResolver {
     return builder.sign(algorithm);
   }
 
-  public org.apized.core.security.model.User convertUser(User user) {
-    return new org.apized.core.security.model.User(
-      user.getId(),
-      user.getUsername(),
-      user.getName(),
-      user.getRoles().stream().map(this::convertRole).toList(),
-      user.getPermissions(),
-      List.of()
-    );
-  }
-
-  private org.apized.core.security.model.Role convertRole(Role role) {
-    return new org.apized.core.security.model.Role(
-      role.getId(),
-      role.getName(),
-      role.getDescription(),
-      role.getPermissions()
-    );
-  }
-
   @EventListener
-  void onStartup(ApizedStartupEvent event) {
+  public void onStartup(ApizedStartupEvent event) {
     ensureDefaultRole();
     ensureAdministrator();
+    applicationContext.getEventPublisher(AuthStartupEvent.class).publishEvent(new AuthStartupEvent());
   }
 
   private void ensureDefaultRole() {
     defaultRole = roleRepository.findDefaultRole().or(() ->
       {
-        Role role = new Role(
-          "Default",
-          "The default role contains the permissions any user should get, including anonymous access",
-          List.of("auth.user.create"),
-          List.of()
-        );
+        Role role = new Role();
+        role.setName("Default");
+        role.setDescription("The default role contains the permissions any user should get, including anonymous access");
+        role.setPermissions(List.of("auth.user.create"));
         role.getMetadata().put("default", true);
         return Optional.ofNullable(roleRepository.create(role));
       }
@@ -154,16 +146,17 @@ public class DBUserResolver implements UserResolver {
 
   private void ensureAdministrator() {
     String username = String.format("administrator@%s", domain);
-    userRepository.findByUsername(username).or(() ->
-      Optional.ofNullable(userRepository.create(new User(
-        username,
-        "Administrator",
-        BCrypt.hashpw("changeme", BCrypt.gensalt()),
-        true,
-        List.of("*"),
-        List.of(),
-        null,
-        null)
-      )));
+    userRepository.findByUsername(username).or(() -> {
+        User user = new User();
+        user.setUsername(username);
+        user.setName("Administrator");
+        user.setPassword(BCrypt.hashpw("changeme", BCrypt.gensalt()));
+        user.setVerified(true);
+        user.setPermissions(List.of("*"));
+        user = userRepository.create(user);
+        log.info(String.format("Created admin user with id %s", user.getId()));
+        return Optional.of(user);
+      }
+    );
   }
 }

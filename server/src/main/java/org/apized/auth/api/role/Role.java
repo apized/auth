@@ -5,10 +5,7 @@ import io.micronaut.data.annotation.TypeDef;
 import io.micronaut.data.model.DataType;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.apized.auth.api.user.User;
 import org.apized.core.model.Apized;
 import org.apized.core.model.BaseModel;
@@ -17,12 +14,12 @@ import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
 @Entity
 @Serdeable
+@NoArgsConstructor
+@AllArgsConstructor
 @Apized(extensions = {RoleRepositoryExtension.class})
 public class Role extends BaseModel {
   /**

@@ -13,3 +13,8 @@ endpoints:
   all:
     port: 0
     enabled: false
+
+logger:
+  levels:
+    io.micronaut.context.condition: INFO
+    io.micronaut.data.query: DEBUG
