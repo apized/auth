@@ -30,9 +30,6 @@ Feature: Update users
     And the response contains
       | name | Updated user |
 
-#  TODO
-  Scenario: Validations
-
   Scenario: Admin can verify users via update
     Given I login as administrator
     And I get a user with id ${user.id}
@@ -51,3 +48,16 @@ Feature: Update users
     Then the request fails
     And the response path "errors" contains element with
       | message | (auth.user.get.${user.id}) Not allowed to get User with id ${user.id} |
+
+  Scenario Outline: Validations
+    Given I login as administrator
+    When I update a user with id ${user.id} with
+      | <field> | <value> |
+    Then the request fails
+    And the response path "errors" contains element with
+      | field   | <field> |
+      | message | <error> |
+    Examples:
+      | field    | value | error            |
+      | name     |       | must not be null |
+      | username |       | must not be null |

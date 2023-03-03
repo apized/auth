@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Integration" type="CucumberJavaRunConfigurationType" factoryName="Cucumber java">
+  <configuration default="false" name="Integration Tests" type="CucumberJavaRunConfigurationType" factoryName="Cucumber java">
     <option name="CUCUMBER_CORE_VERSION" value="5" />
     <option name="FILE_PATH" value="$PROJECT_DIR$/server/src/test/resources/features" />
     <option name="GLUE" value="org.apized" />

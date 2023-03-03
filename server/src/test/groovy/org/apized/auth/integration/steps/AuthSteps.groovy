@@ -62,6 +62,12 @@ class AuthSteps extends AbstractSteps {
         .body(JsonOutput.toJson(table.asMap(String, String)))
         .post(context.eval("/roles") as String)
       context.addResponse('role', (response.statusCode() / 100 as int) == 2, response.asString(), alias)
+
+      String roleId = context.eval("\${${alias}.id}").toString()
+      for (String permission : context.eval((table?.asMap(String, Object)?.permissions ?: '[]') as String)) {
+        grantUserPermission(permission, 'role', roleId)
+        assertTrue(context.getLatestStatus())
+      }
     })
   }
 

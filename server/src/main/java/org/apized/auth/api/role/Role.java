@@ -1,6 +1,7 @@
 package org.apized.auth.api.role;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.micronaut.data.annotation.TypeDef;
 import io.micronaut.data.model.DataType;
 import io.micronaut.serde.annotation.Serdeable;
@@ -36,6 +37,7 @@ public class Role extends BaseModel {
   /**
    * The permissions that are to be granted to users that have this role. Read more about permissions at https://apized.org/#/documentation?id=security.
    */
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   @TypeDef(type = DataType.JSON)
   List<String> permissions = new ArrayList<>();
 

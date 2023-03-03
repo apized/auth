@@ -50,5 +50,14 @@ Feature: Create users
       | username | user@apized.org |
       | verified | true            |
 
-#  TODO
   Scenario: Validations
+    Given I login as administrator
+    When I create an empty user
+    Then the request fails
+    And the response path "errors" contains 2 elements
+    And the response path "errors" contains element with
+      | field   | username         |
+      | message | must not be null |
+    And the response path "errors" contains element with
+      | field   | name             |
+      | message | must not be null |

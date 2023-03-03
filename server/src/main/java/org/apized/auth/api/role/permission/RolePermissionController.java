@@ -1,4 +1,4 @@
-package org.apized.auth.api.user.permission;
+package org.apized.auth.api.role.permission;
 
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
@@ -12,21 +12,21 @@ import java.util.UUID;
 
 @Introspected
 @Transactional
-@Controller("/users/{userId}/permissions")
-public class UserPermissionController {
+@Controller("/roles/{roleId}/permissions")
+public class RolePermissionController {
 
   @Inject
-  UserPermissionService permissionService;
+  RolePermissionService permissionService;
 
   @Post("/{permission}")
-  public HttpResponse grantPermission(UUID userId, String permission) {
-    permissionService.grantPermissionTo(userId, permission);
+  public HttpResponse grantPermission(UUID roleId, String permission) {
+    permissionService.grantPermissionTo(roleId, permission);
     return HttpResponse.accepted();
   }
 
   @Delete("/{permission}")
-  public HttpResponse revokePermission(UUID userId, String permission) {
-    permissionService.revokePermissionFrom(userId, permission);
+  public HttpResponse revokePermission(UUID roleId, String permission) {
+    permissionService.revokePermissionFrom(roleId, permission);
     return HttpResponse.accepted();
   }
 }

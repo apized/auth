@@ -16,5 +16,11 @@ Feature: Create roles
     And the response contains
       | name | Test role |
 
-#  TODO
   Scenario: Validations
+    Given I login as administrator
+    When I create an empty role
+    Then the request fails
+    And the response path "errors" contains 1 elements
+    And the response path "errors" contains element with
+      | field   | name              |
+      | message | must not be blank |

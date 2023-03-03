@@ -20,5 +20,14 @@ Feature: Update roles
     And the response contains
       | name | updated role |
 
-#  TODO
-  Scenario: Validations
+  Scenario Outline: Validations
+    Given I login as administrator
+    When I update a role with id ${role.id} with
+      | <field> | <value> |
+    Then the request fails
+    And the response path "errors" contains element with
+      | field   | <field> |
+      | message | <error> |
+    Examples:
+      | field | value | error             |
+      | name  |       | must not be blank |
