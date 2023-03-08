@@ -23,7 +23,6 @@ import java.util.List;
 @Entity
 @Serdeable
 @NoArgsConstructor
-@AllArgsConstructor
 @Apized(
   operations = {Action.LIST, Action.GET, Action.CREATE, Action.UPDATE},
   extensions = {UserRepositoryExtension.class}

@@ -37,9 +37,13 @@ public class DefaultPermissionsAndRoleOnCreationBehaviour extends AbstractApiBeh
       String.format("auth.user.update.%s.password", input.getId())
     ));
     input.setRoles(List.of(resolver.getDefaultRole()));
+
     if (!ApizedContext.getSecurity().getUser().isAllowed("auth")) {
       input.setVerified(false);
-      input.setEmailVerificationCode(CodeGenerator.generateCode());
+    }
+
+    if (!input.isVerified()) {
+      input.setEmailVerificationCode(CodeGenerator.generateCode(128));
     }
   }
 }

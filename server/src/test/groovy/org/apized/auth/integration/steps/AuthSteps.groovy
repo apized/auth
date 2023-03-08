@@ -37,7 +37,7 @@ class AuthSteps extends AbstractSteps {
   }
 
   @And('^there is a user ([^\\s]+) with$')
-  void thereIsAUserWith(String alias, DataTable table) {
+  void createUser(String alias, DataTable table) {
     executeAs('administrator', () -> {
       Map<String, Object> userInput = table ? new HashMap<>(table.asMap(String, String)) : new HashMap<>()
       userInput.password = userInput.password ?: UUID.randomUUID().toString()
@@ -49,14 +49,14 @@ class AuthSteps extends AbstractSteps {
 
       String userId = context.eval("\${${alias}.id}").toString()
       for (String permission : context.eval((table?.asMap(String, Object)?.permissions ?: '[]') as String)) {
-        grantUserPermission(permission, 'user', userId)
+        grantPermission(permission, 'user', userId)
         assertTrue(context.getLatestStatus())
       }
     })
   }
 
   @And('^there is a role ([^\\s]+) with$')
-  void thereIsARoleRoleWith(String alias, DataTable table) {
+  void createRole(String alias, DataTable table) {
     executeAs('administrator', () -> {
       Response response = testRunner.getClient()
         .body(JsonOutput.toJson(table.asMap(String, String)))
@@ -65,28 +65,28 @@ class AuthSteps extends AbstractSteps {
 
       String roleId = context.eval("\${${alias}.id}").toString()
       for (String permission : context.eval((table?.asMap(String, Object)?.permissions ?: '[]') as String)) {
-        grantUserPermission(permission, 'role', roleId)
+        grantPermission(permission, 'role', roleId)
         assertTrue(context.getLatestStatus())
       }
     })
   }
 
   @And('^I grant the ([^\\s]+) permission to the (user|role) with id ([^\\s]+)$')
-  void grantUserPermission(String permission, String type, String userId) {
+  void grantPermission(String permission, String type, String userId) {
     Response response = testRunner.getClient(context)
       .post(context.eval("/${type}s/$userId/permissions/$permission").toString())
     context.addResponse('user', (response.statusCode() / 100 as int) == 2, response.asString(), null)
   }
 
   @And('^I revoke the ([^\\s]+) permission from the (user|role) with id ([^\\s]+)$')
-  void iRevokeTheAuthUserPermissionFromUserWithId$OtherId(String permission, String type, String userId) {
+  void revokePermission(String permission, String type, String userId) {
     Response response = testRunner.getClient(context)
       .delete(context.eval("/${type}s/$userId/permissions/$permission").toString())
     context.addResponse('user', (response.statusCode() / 100 as int) == 2, response.asString(), null)
   }
 
   @And('^I login with username ([^\\s]+) and password ([^\\s]+)$')
-  void iLoginWithUsernameTestApizedOrgAndPasswordTest_password(String username, String password) {
+  void login(String username, String password) {
     Response response = testRunner.getClient(context)
       .body(JsonOutput.toJson([ username: username, password: password ]))
       .post(context.eval("/tokens").toString())
@@ -94,7 +94,7 @@ class AuthSteps extends AbstractSteps {
   }
 
   @And('^There is a token for user ([^\\s]+) as ([^\\s]+) valid for (\\d+) seconds$')
-  void thereIsATokenForUserAsToken(String user, String alias, Integer duration) {
+  void tokenFor(String user, String alias, Integer duration) {
     Algorithm algorithm = Algorithm.HMAC256('boatymcboatface')
     String userId = testRunner.getUserId(user)
     Date issuedAt = new Date()
@@ -113,7 +113,7 @@ class AuthSteps extends AbstractSteps {
   }
 
   @And('^I redeem the token ([^\\s]+)$')
-  void iRedeemTheToken$Token(String token) {
+  void redeemToken(String token) {
     Response response = testRunner.getClient(context)
       .body()
       .get(context.eval("/tokens/$token").toString())
@@ -129,7 +129,7 @@ class AuthSteps extends AbstractSteps {
   }
 
   @And('I get self')
-  void iGetSelf() {
+  void getSelf() {
     Response response = testRunner.getClient(context)
       .body()
       .get(context.eval("/tokens").toString())
@@ -137,11 +137,57 @@ class AuthSteps extends AbstractSteps {
   }
 
   @When('^I create an (expiring|non-expiring) token for ([^\\s]+)$')
-  void iCreateATokenFor(String type, String user) {
+  void createTokenFor(String type, String user) {
     String userId = testRunner.getUserId(user)
     Response response = testRunner.getClient(context)
       .body()
       .post(context.eval("/tokens/$userId?expiring=${type == 'expiring'}").toString())
     context.addResponse('token', (response.statusCode() / 100 as int) == 2, response.asString(), null)
+  }
+
+  @And('^the verification code for ([^\\s]+) is stored as ([^\\s]+)$')
+  void retrieveVerificationCode(String user, String alias) {
+    executeAs('administrator', () -> {
+      String userId = testRunner.getUserId(user)
+      Response response = testRunner.getClient(context)
+        .body()
+        .get(context.eval("/integration/users/$userId/emailVerificationCode").toString())
+      context.responses[alias] = response.asString()
+    })
+  }
+
+  @And('^the password code for ([^\\s]+) is stored as ([^\\s]+)$')
+  void retrievePasswordCode(String user, String alias) {
+    executeAs('administrator', () -> {
+      String userId = testRunner.getUserId(user)
+      Response response = testRunner.getClient(context)
+        .body()
+        .get(context.eval("/integration/users/$userId/passwordResetCode").toString())
+      context.responses[alias] = response.asString()
+    })
+  }
+
+  @When('^I verify user ([^\\s]+) with code ([^\\s]+)$')
+  void verifyUser(String user, String code) {
+    String userId = testRunner.getUserId(user)
+    Response response = testRunner.getClient(context)
+      .body(JsonOutput.toJson([ code: context.eval(code) ]))
+      .post(context.eval("/users/$userId/verification").toString())
+    context.addResponse('code', (response.statusCode() / 100 as int) == 2, response.asString(), null)
+  }
+
+  @When('^I ask for the password of ([^\\s]+) to be reset$')
+  void requestResetPassword(String username) {
+    Response response = testRunner.getClient(context)
+      .delete(context.eval("/users/$username/password").toString())
+    context.addResponse('code', (response.statusCode() / 100 as int) == 2, response.asString(), null)
+  }
+
+  @When('^I reset the password for ([^\\s]+) with code ([^\\s]+) and password ([^\\s]+)$')
+  void resetPassword(String username, String code, String password) {
+    Response response = testRunner.getClient(context)
+      .body(JsonOutput.toJson([ code: context.eval(code), password: password ]))
+      .post(context.eval("/users/$username/password").toString())
+    context.addResponse('code', (response.statusCode() / 100 as int) == 2, response.asString(), null)
   }
 }

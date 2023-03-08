@@ -16,10 +16,12 @@
 
 package org.apized.auth.integration
 
-
+import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Get
 import jakarta.inject.Inject
-import org.apized.auth.security.DBUserResolver
+import org.apized.auth.api.user.User
+import org.apized.auth.api.user.UserService
 import org.apized.micronaut.test.integration.MicronautTestController
 
 import javax.transaction.Transactional
@@ -27,4 +29,19 @@ import javax.transaction.Transactional
 @Transactional
 @Controller('/integration')
 class TestController extends MicronautTestController {
+
+  @Inject
+  UserService userService
+
+  @Get('/users/{userId}/emailVerificationCode')
+  HttpResponse<String> getEmailVerificationCode(UUID userId) {
+    User user = userService.get(userId)
+    HttpResponse.ok(user.getEmailVerificationCode())
+  }
+
+  @Get('/users/{userId}/passwordResetCode')
+  HttpResponse<String> getPasswordResetCode(UUID userId) {
+    User user = userService.get(userId)
+    HttpResponse.ok(user.getPasswordResetCode())
+  }
 }

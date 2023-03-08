@@ -77,22 +77,16 @@ public class DBUserResolver implements UserResolver {
         : UUID.randomUUID()
     );
 
-    if (user.isPresent()) {
-      if (!user.get().isVerified()) {
-        throw new UnauthorizedException("Not authorized");
-      }
-
-      return AuthConverter.convertAuthUserToApizedUser(user.get());
-    } else {
-      return new org.apized.core.security.model.User(
+    return user
+      .map(AuthConverter::convertAuthUserToApizedUser)
+      .orElseGet(() -> new org.apized.core.security.model.User(
         UUID.randomUUID(),
         "anonymous@apized.org",
         "Anonymous",
         List.of(AuthConverter.convertAuthRoleToApizedRole(defaultRole)),
         List.of(),
         List.of()
-      );
-    }
+      ));
   }
 
   @Override

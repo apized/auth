@@ -1,19 +1,46 @@
 Feature: Verify email
 
-#  TODO
+  Background:
+    Given there is a user test with
+      | name     | Test user       |
+      | username | test@apized.org |
+      | password | test_password   |
+    And the verification code for test is stored as code
+
   Scenario: Admin can verify users email
+    Given I login as admin
+    When I verify user test with code ${code}
+    Then the request succeeds
 
-#  TODO
   Scenario: Admin cannot verify users email with an invalid code
+    Given I login as admin
+    When I verify user test with code 123
+    Then the request fails
+    And the response path "errors" contains element with
+      | message | Not authorized |
 
-#  TODO
   Scenario: Admin cannot verify email for non existing user
+    Given I login as admin
+    When I verify user idontexist with code 123
+    Then the request fails
+    And the response path "errors" contains element with
+      | message | Not authorized |
 
-#  TODO
-  Scenario: User can verify their email
+  Scenario: Anonymous can verify email
+    Given I login as anonymous
+    When I verify user test with code ${code}
+    Then the request succeeds
 
-#  TODO
-  Scenario: User cannot verify their email with an invalid code
+  Scenario: Anonymous cannot verify their email with an invalid code
+    Given I login as anonymous
+    When I verify user test with code 123
+    Then the request fails
+    And the response path "errors" contains element with
+      | message | Not authorized |
 
-#  TODO
-  Scenario: User cannot verify another users' email
+  Scenario: Anonymous cannot verify email for non existing user
+    Given I login as anonymous
+    When I verify user idontexist with code 123
+    Then the request fails
+    And the response path "errors" contains element with
+      | message | Not authorized |

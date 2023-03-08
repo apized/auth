@@ -6,6 +6,10 @@ Feature: Redeem token
       | password | user_password   |
       | name     | Test user       |
       | verified | true            |
+    Given there is a user unverified with
+      | username | unverified@apized.org |
+      | password | unverified_password   |
+      | name     | Unverified user       |
 
   Scenario: Admin can redeem valid token
     Given There is a token for user user as token valid for 10 seconds
@@ -15,6 +19,25 @@ Feature: Redeem token
     And the response contains
       | name     | Test user       |
       | username | user@apized.org |
+
+
+  Scenario: Admin can redeem token for invalid user id (getting the anonymous user)
+    Given There is a token for user user as token valid for 10 seconds
+    And I login as administrator
+    When I redeem the token eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhcGl6ZWQiLCJzdWIiOiI4MzMwOGJlMi1jOWI2LTQ0YzQtOGYzOC1iYjBmZGIxMDUxN2EiLCJpc3MiOiJhcGl6ZWQiLCJpYXQiOjE2Nzc3NzE5NTQsImp0aSI6IjFlNmQxYzQyLTZkYzctNDJkMi05NWQyLWMyZmJjNTJkNDE1YSJ9.WhgM4zBYP3PYs4z9OqAlGYo4GOSgkfG9IwKcNf9lwRA
+    Then the request succeeds
+    And the response contains
+      | name     | Anonymous            |
+      | username | anonymous@apized.org |
+
+  Scenario: Admin can redeem token for unverified user
+    Given There is a token for user unverified as token valid for 10 seconds
+    And I login as administrator
+    When I redeem the token ${token.jwt}
+    Then the request succeeds
+    And the response contains
+      | name     | Unverified user       |
+      | username | unverified@apized.org |
 
   Scenario: Anonymous cannot redeem tokens
     Given There is a token for user user as token valid for 10 seconds

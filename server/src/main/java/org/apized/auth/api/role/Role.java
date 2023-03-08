@@ -20,7 +20,6 @@ import java.util.List;
 @Entity
 @Serdeable
 @NoArgsConstructor
-@AllArgsConstructor
 @Apized(extensions = {RoleRepositoryExtension.class})
 public class Role extends BaseModel {
   /**

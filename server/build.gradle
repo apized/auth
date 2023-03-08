@@ -1,5 +1,6 @@
 plugins {
   id 'org.apized.micronaut' version "$apizedVersion"
+  id 'jacoco'
 }
 
 dependencies {
@@ -8,5 +9,21 @@ dependencies {
 }
 
 application {
-  mainClass.set("org.apized.sample.postgres.Application")
+  mainClass.set("org.apized.auth")
+}
+
+tasks.named("dockerBuildNative") {
+  images = [System.getenv("IMAGE_TAG") ?: "assignment:$project.version"]
+}
+
+tasks.named('dockerfileNative') {
+  baseImage('frolvlad/alpine-glibc:alpine-3.14') // amd64
+}
+
+test{
+  if (project.hasProperty('excludeTests')) {
+    project.properties['excludeTests']?.replaceAll('\\s', '')?.split('[,;]')?.each {
+      exclude "${it}"
+    }
+  }
 }
