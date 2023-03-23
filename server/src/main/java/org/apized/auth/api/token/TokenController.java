@@ -2,7 +2,6 @@ package org.apized.auth.api.token;
 
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.Introspected;
-import io.micronaut.core.bind.annotation.Bindable;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.*;
@@ -59,7 +58,6 @@ public class TokenController {
         if (user.isVerified()) {
           return getHttpResponse(AuthConverter.convertAuthUserToApizedUser(user));
         } else {
-          // todo send verification email
           throw new UnauthorizedException("Email verification pending");
         }
       } else {

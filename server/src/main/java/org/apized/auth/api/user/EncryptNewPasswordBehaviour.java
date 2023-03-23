@@ -4,6 +4,7 @@ import jakarta.inject.Singleton;
 import org.apized.auth.security.BCrypt;
 import org.apized.core.behaviour.AbstractApiBehaviourHandler;
 import org.apized.core.behaviour.annotation.Behaviour;
+import org.apized.core.error.exception.BadRequestException;
 import org.apized.core.execution.Execution;
 import org.apized.core.model.Action;
 import org.apized.core.model.Layer;
@@ -34,7 +35,7 @@ public class EncryptNewPasswordBehaviour extends AbstractApiBehaviourHandler<Use
       String password = user.getPassword();
       if (password != null && !password.isBlank()) {
         if (password.length() < 8) {
-          user.setPassword("invalid");
+          throw new BadRequestException("Password must be at least 8 characters long");
         } else {
           user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
         }

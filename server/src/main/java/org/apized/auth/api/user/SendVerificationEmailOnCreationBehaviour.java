@@ -19,7 +19,17 @@ public class SendVerificationEmailOnCreationBehaviour extends AbstractApiBehavio
   @Override
   public void postCreate(Execution execution, User input, User output) {
     if (!output.isVerified()) {
-      //todo send verification email
+//      emailSender.send(Email.builder()
+//        .from("...")
+//        .to(output.getUsername())
+//        .subject("Please verify your email address")
+//        .body(new TemplateBody<>(BodyType.HTML, new ModelAndView<>(
+//          "verification",
+//          Map.of(
+//            "name", output.getName(),
+//            "link", "https://google.com"
+//          )
+//        ))));
     }
   }
 }
