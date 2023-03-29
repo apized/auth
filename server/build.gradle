@@ -1,5 +1,13 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
+buildscript {
+  dependencies {
+    classpath("com.github.docker-java:docker-java-transport-httpclient5:3.2.13") {
+      because("M1 macs need a later version of JNA")
+    }
+  }
+}
+
 plugins {
   id 'org.apized.micronaut' version "$apizedVersion"
   id 'jacoco'
@@ -14,15 +22,16 @@ application {
   mainClass.set("org.apized.auth.Application")
 }
 
-tasks.named("dockerBuildNative") {
-  images = [System.getenv("IMAGE_TAG") ?: "$parent.name:$version"]
+dockerBuildNative {
+  images.set([ System.getenv("IMAGE_TAG") ?: "$parent.name:$version" ])
 }
 
-tasks.named('dockerfileNative') {
-  baseImage('frolvlad/alpine-glibc:alpine-3.14') // amd64
+dockerfileNative {
+  baseImage('alpine:3.17')
+  runCommand("apk add gcompat")
 }
 
-test{
+test {
   if (project.hasProperty('excludeTests')) {
     project.properties['excludeTests']?.replaceAll('\\s', '')?.split('[,;]')?.each {
       exclude "${it}"

@@ -43,7 +43,7 @@ public class DefaultPermissionsAndRoleOnCreationBehaviour extends AbstractApiBeh
     }
 
     if (!input.isVerified()) {
-      input.setEmailVerificationCode(CodeGenerator.generateCode(128));
+      input.setEmailVerificationCode(CodeGenerator.generateCode());
     }
   }
 }

@@ -47,7 +47,7 @@ public class PasswordResetController {
   public HttpResponse reset(String username) {
     try {
       User user = userRepository.findByUsername(username).orElseThrow(NotFoundException::new);
-      user.setPasswordResetCode(CodeGenerator.generateCode(128));
+      user.setPasswordResetCode(CodeGenerator.generateCode());
       user._getModelMetadata().getTouched().add("passwordResetCode");
       userRepository.update(user);
       //todo send password reset email
