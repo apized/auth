@@ -41,6 +41,7 @@ class AuthSteps extends AbstractSteps {
     executeAs('administrator', () -> {
       Map<String, Object> userInput = table ? new HashMap<>(table.asMap(String, String)) : new HashMap<>()
       userInput.password = userInput.password ?: UUID.randomUUID().toString()
+      userInput.remove("permissions")
 
       Response response = testRunner.getClient()
         .body(JsonOutput.toJson(userInput))

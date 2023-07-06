@@ -31,8 +31,8 @@ public class AuthUserResolver implements UserResolver {
   @Inject
   ApizedConfig config;
 
-  @SneakyThrows
   @Override
+  @SneakyThrows
   public User getUser(String token) {
     log.debug("Fetching user from token {}", token);
 
@@ -51,8 +51,8 @@ public class AuthUserResolver implements UserResolver {
     );
   }
 
-  @SneakyThrows
   @Override
+  @SneakyThrows
   public User getUser(UUID userId) {
     log.debug("Fetching user by id {}", userId);
 
@@ -71,8 +71,8 @@ public class AuthUserResolver implements UserResolver {
     );
   }
 
-  @SneakyThrows
   @Override
+  @SneakyThrows
   public User ensureUser(User user) {
     String uri = config.getFederation().get("auth") + "/auth/users/" + user.getId() + "/ensure?verified=false&fields=id";
     HttpRequest request = HttpRequest.newBuilder()
@@ -99,8 +99,9 @@ public class AuthUserResolver implements UserResolver {
   }
 
 
-  @SneakyThrows
   @Override
+  @SneakyThrows
+  @SuppressWarnings("unchecked")
   public String generateToken(User user, boolean expiring) {
     String uri = config.getFederation().get("auth") + "/auth/users/" + user.getId() + "/token?expiring=" + expiring;
 
