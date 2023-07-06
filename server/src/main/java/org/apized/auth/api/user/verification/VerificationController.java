@@ -2,8 +2,11 @@ package org.apized.auth.api.user.verification;
 
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.PathVariable;
 import io.micronaut.http.annotation.Post;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.inject.Inject;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserService;
@@ -21,8 +24,11 @@ public class VerificationController {
   @Inject
   UserService userService;
 
+  @Operation(operationId = "Verify email", summary = "Verify email", tags = {"User"}, description = """
+      
+    """)
   @Post
-  public HttpResponse verify(UUID userId, VerificationRequest verificationRequest) {
+  public HttpResponse verify(@PathVariable("userId") UUID userId, @Body VerificationRequest verificationRequest) {
     try {
       User user = userService.find(userId);
       if (!verificationRequest.getCode().equals(user.getEmailVerificationCode())) {
