@@ -8,6 +8,7 @@ import io.micronaut.http.annotation.*;
 import io.micronaut.http.cookie.CookieFactory;
 import io.micronaut.http.cookie.SameSite;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.inject.Inject;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserService;
@@ -73,6 +74,7 @@ public class TokenController {
     operationId = "Create",
     tags = {"Token"},
     summary = "Create token for user",
+    security = @SecurityRequirement(name = "bearerAuth"),
     description = """
          Generate a token for the given user
       """)
@@ -95,6 +97,7 @@ public class TokenController {
     operationId = "Redeem self token",
     tags = {"Token"},
     summary = "Redeem self token",
+    security = @SecurityRequirement(name = "bearerAuth"),
     description = """
       """)
   public org.apized.core.security.model.User self() {
@@ -106,6 +109,7 @@ public class TokenController {
     operationId = "Redeem a token",
     tags = {"Token"},
     summary = "Redeem a token",
+    security = @SecurityRequirement(name = "bearerAuth"),
     description = """
       """)
   public org.apized.core.security.model.User redeem(String jwt) {
@@ -121,6 +125,7 @@ public class TokenController {
     operationId = "Renew",
     tags = {"Token"},
     summary = "Renew a token",
+    security = @SecurityRequirement(name = "bearerAuth"),
     description = """
       """)
   public HttpResponse<Token> renew(String jwt) {
