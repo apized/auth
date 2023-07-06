@@ -40,7 +40,7 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
       - name: Publish jars
-        run: ./gradlew clean publish
+        run: ./gradlew clean :client:publish
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -64,4 +64,4 @@ jobs:
         env:
           GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
           GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
-          DOCKER_REGISTRY: gcr.io
+          DOCKER_REGISTRY: ghcr.io
