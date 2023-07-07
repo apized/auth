@@ -29,3 +29,10 @@ publishing {
     }
   }
 }
+
+release {
+  preTagCommitMessage = '[skip ci] [Gradle Release Plugin] - pre tag commit: '
+  git {
+    requireBranch = /(main|release-.*)/
+  }
+}
