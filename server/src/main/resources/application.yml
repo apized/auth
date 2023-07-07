@@ -19,7 +19,7 @@ micronaut:
 
 endpoints:
   all:
-    port: ${MANAGEMENT_PORT:8081}
+    port: ${MANAGEMENT_PORT:8080}
   health:
     details-visible: ANONYMOUS
     enabled: true
@@ -63,3 +63,10 @@ auth:
     secret: ${AUTH_SECRET:boatymcboatface}
   cookie:
     domain: ${AUTH_DOMAIN:apized.org}
+
+sendgrid:
+  api-key: ${SENDGRID_API_KEY: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}
+  from: encavadas@gmail.com
+  templates:
+    user-verification: d-4724e366c66c4cf6888692cc9f2403d6
+    password-reset: d-918d971b8e6f41adaab018ba65f8b701

@@ -35,6 +35,7 @@ public class VerificationController {
         throw new BadRequestException("Invalid code");
       }
       user.setVerified(true);
+      user.setEmailVerificationCode(null);
     } catch (Throwable t) {
       throw new UnauthorizedException("Not authorized");
     }

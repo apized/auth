@@ -1,12 +1,18 @@
 package org.apized.auth.api.user;
 
+import io.micronaut.context.annotation.Value;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import lombok.SneakyThrows;
+import org.apized.auth.SendgridEmailService;
 import org.apized.core.behaviour.AbstractApiBehaviourHandler;
 import org.apized.core.behaviour.annotation.Behaviour;
 import org.apized.core.execution.Execution;
 import org.apized.core.model.Action;
 import org.apized.core.model.Layer;
 import org.apized.core.model.When;
+
+import java.util.Map;
 
 @Behaviour(
   model = User.class,
@@ -16,20 +22,26 @@ import org.apized.core.model.When;
 )
 @Singleton
 public class SendVerificationEmailOnCreationBehaviour extends AbstractApiBehaviourHandler<User> {
+
+  @Value("${sendgrid.templates.user-verification}")
+  private String templateId;
+
+  @Inject
+  private SendgridEmailService emailService;
+
   @Override
+  @SneakyThrows
   public void postCreate(Execution execution, User input, User output) {
     if (!output.isVerified()) {
-//      emailSender.send(Email.builder()
-//        .from("...")
-//        .to(output.getUsername())
-//        .subject("Please verify your email address")
-//        .body(new TemplateBody<>(BodyType.HTML, new ModelAndView<>(
-//          "verification",
-//          Map.of(
-//            "name", output.getName(),
-//            "link", "https://google.com"
-//          )
-//        ))));
+      emailService.send(
+        templateId,
+        output.getName(),
+        output.getUsername(),
+        Map.of(
+          "name", output.getName(),
+          "code", output.getEmailVerificationCode()
+        )
+      );
     }
   }
 }

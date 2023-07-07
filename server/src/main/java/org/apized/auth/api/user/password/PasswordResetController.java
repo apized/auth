@@ -1,14 +1,14 @@
 package org.apized.auth.api.user.password;
 
+import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.inject.Inject;
+import org.apized.auth.SendgridEmailService;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserRepository;
-import org.apized.auth.api.user.UserService;
 import org.apized.auth.security.BCrypt;
 import org.apized.auth.security.CodeGenerator;
 import org.apized.core.error.exception.BadRequestException;
@@ -16,18 +16,25 @@ import org.apized.core.error.exception.NotFoundException;
 import org.apized.core.error.exception.UnauthorizedException;
 
 import javax.transaction.Transactional;
+import java.util.Map;
 
 @Introspected
 @Transactional
 @Controller("/users/{username}/password")
 public class PasswordResetController {
 
+  @Value("${sendgrid.templates.password-reset}")
+  private String templateId;
+
   @Inject
   UserRepository userRepository;
 
+  @Inject
+  SendgridEmailService emailService;
+
   @Operation(operationId = "Reset password confirmation", summary = "Reset password confirmation", tags = {"User"}, description = """
-    
-  """)
+      
+    """)
   @Post
   public HttpResponse setPassword(@PathVariable("username") String username, @Body PasswordResetRequest passwordResetRequest) {
     try {
@@ -46,8 +53,8 @@ public class PasswordResetController {
   }
 
   @Operation(operationId = "Reset password", summary = "Reset password", tags = {"User"}, description = """
-    
-  """)
+      
+    """)
   @Delete
   public HttpResponse reset(@PathVariable("username") String username) {
     try {
@@ -55,7 +62,9 @@ public class PasswordResetController {
       user.setPasswordResetCode(CodeGenerator.generateCode());
       user._getModelMetadata().getTouched().add("passwordResetCode");
       userRepository.update(user);
-      //todo send password reset email
+      emailService.send(templateId, user.getName(), user.getUsername(), Map.of(
+        "code", user.getPasswordResetCode()
+      ));
     } catch (Throwable t) {
       //Do nothing. We don't want to expose a way for checking for valid usernames
     }
