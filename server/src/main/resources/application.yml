@@ -4,6 +4,12 @@ micronaut:
 
   server:
     port: ${PORT:8080}
+    cors:
+      enabled: true
+      configurations:
+        all:
+          allowedOrigins:
+            - ^https?:\/\/.*$
 
   router:
     static-resources:
