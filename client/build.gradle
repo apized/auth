@@ -1,6 +1,5 @@
 plugins {
   id 'org.apized.micronaut' version "$apizedVersion"
-  id 'net.researchgate.release' version '2.8.1'
   id 'java-library'
   id 'maven-publish'
 }
@@ -27,12 +26,5 @@ publishing {
     maven(MavenPublication) {
       from components.java
     }
-  }
-}
-
-release {
-  preTagCommitMessage = '[skip ci] [Gradle Release Plugin] - pre tag commit: '
-  git {
-    requireBranch = /(main|release-.*)/
   }
 }
