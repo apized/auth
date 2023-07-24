@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.MissingClaimException;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Value;
@@ -16,8 +15,6 @@ import org.apized.auth.api.role.Role;
 import org.apized.auth.api.role.RoleRepository;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserRepository;
-import org.apized.core.ApizedConfig;
-import org.apized.core.error.exception.UnauthorizedException;
 import org.apized.core.security.MemoryUserResolver;
 import org.apized.core.security.UserResolver;
 import org.apized.micronaut.server.ApizedStartupEvent;
@@ -81,7 +78,7 @@ public class DBUserResolver implements UserResolver {
       .map(AuthConverter::convertAuthUserToApizedUser)
       .orElseGet(() -> new org.apized.core.security.model.User(
         UUID.randomUUID(),
-        "anonymous@apized.org",
+        String.format("anonymous@%s", domain),
         "Anonymous",
         List.of(AuthConverter.convertAuthRoleToApizedRole(defaultRole)),
         List.of(),

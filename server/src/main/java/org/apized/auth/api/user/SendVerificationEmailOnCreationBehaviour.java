@@ -4,6 +4,7 @@ import io.micronaut.context.annotation.Value;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import lombok.SneakyThrows;
+import org.apized.auth.EmailService;
 import org.apized.auth.SendgridEmailService;
 import org.apized.core.behaviour.AbstractApiBehaviourHandler;
 import org.apized.core.behaviour.annotation.Behaviour;
@@ -27,7 +28,7 @@ public class SendVerificationEmailOnCreationBehaviour extends AbstractApiBehavio
   private String templateId;
 
   @Inject
-  private SendgridEmailService emailService;
+  private EmailService emailService;
 
   @Override
   @SneakyThrows

@@ -24,7 +24,7 @@ import org.apized.auth.api.user.User
 import org.apized.auth.api.user.UserService
 import org.apized.micronaut.test.integration.MicronautTestController
 
-import javax.transaction.Transactional
+import jakarta.transaction.Transactional
 
 @Transactional
 @Controller('/integration')

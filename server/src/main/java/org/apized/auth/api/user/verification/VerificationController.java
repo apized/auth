@@ -13,7 +13,7 @@ import org.apized.auth.api.user.UserService;
 import org.apized.core.error.exception.BadRequestException;
 import org.apized.core.error.exception.UnauthorizedException;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.util.UUID;
 
 @Introspected

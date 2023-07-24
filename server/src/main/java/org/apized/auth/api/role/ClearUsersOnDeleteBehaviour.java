@@ -10,7 +10,7 @@ import org.apized.core.model.Action;
 import org.apized.core.model.Layer;
 import org.apized.core.model.When;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.UUID;
 

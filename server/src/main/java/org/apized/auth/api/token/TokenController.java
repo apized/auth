@@ -20,7 +20,7 @@ import org.apized.core.context.ApizedContext;
 import org.apized.core.error.exception.ForbiddenException;
 import org.apized.core.error.exception.UnauthorizedException;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,6 +39,9 @@ public class TokenController {
 
   @Value("${auth.cookie.domain}")
   String cookieDomain;
+
+  @Value("${auth.cookie.secure}")
+  boolean secure;
 
   @Value("${auth.token.duration}")
   int tokenDuration;
@@ -67,6 +70,29 @@ public class TokenController {
     } else {
       throw new UnauthorizedException("Not authorized");
     }
+  }
+
+  @Delete
+  @Operation(
+    operationId = "Logout",
+    tags = {"Token"},
+    summary = "Logout",
+    description = """
+         Logout
+      """)
+  public HttpResponse<Token> logout() {
+    return HttpResponse
+      .ok()
+      .body(new Token(null, ApizedContext.getSecurity().getToken()))
+      .cookie(
+        CookieFactory.INSTANCE.create(config.getCookie(), ApizedContext.getSecurity().getToken())
+          .path("/")
+          .maxAge(0)
+          .domain(cookieDomain)
+          .httpOnly(true)
+          .sameSite(secure ? SameSite.None : SameSite.Lax)
+          .secure(secure)
+      );
   }
 
   @Post("/{userId}")
@@ -153,8 +179,8 @@ public class TokenController {
           .maxAge(tokenDuration)
           .domain(cookieDomain)
           .httpOnly(true)
-          .sameSite(SameSite.None)
-          .secure(true)
+          .sameSite(secure ? SameSite.None : SameSite.Lax)
+          .secure(secure)
       );
   }
 }

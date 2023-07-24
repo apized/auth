@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apized.core.model.Model;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.util.UUID;
 
 @Getter

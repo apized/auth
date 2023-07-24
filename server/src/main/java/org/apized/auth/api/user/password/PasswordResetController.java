@@ -6,6 +6,7 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.inject.Inject;
+import org.apized.auth.EmailService;
 import org.apized.auth.SendgridEmailService;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserRepository;
@@ -15,7 +16,7 @@ import org.apized.core.error.exception.BadRequestException;
 import org.apized.core.error.exception.NotFoundException;
 import org.apized.core.error.exception.UnauthorizedException;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.util.Map;
 
 @Introspected
@@ -30,7 +31,7 @@ public class PasswordResetController {
   UserRepository userRepository;
 
   @Inject
-  SendgridEmailService emailService;
+  EmailService emailService;
 
   @Operation(operationId = "Reset password confirmation", summary = "Reset password confirmation", tags = {"User"}, description = """
       

@@ -11,7 +11,7 @@ import org.apized.auth.api.user.User;
 import org.apized.core.model.Apized;
 import org.apized.core.model.BaseModel;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -5,6 +5,8 @@ Feature: Update users
       | name     | Test user       |
       | username | user@apized.org |
       | password | user_password   |
+    And there is a role role with
+      | name | Test role |
 
   Scenario: User can update his own user
     Given I login as user
@@ -29,6 +31,40 @@ Feature: Update users
     Then the request succeeds
     And the response contains
       | name | Updated user |
+
+  Scenario: Admin can add roles
+    Given I login as administrator
+    When I update an user with id ${user.id} with
+      | roles | [ '${user.roles[0]}', '${role.id}' ] |
+    Then the request succeeds
+    And the response contains
+      | roles | [ '${user.roles[0]}', '${role.id}' ] |
+    And I get a user with id ${user.id}
+    And the response contains
+      | roles | [ '${user.roles[0]}', '${role.id}' ] |
+
+  Scenario: Admin can replace roles
+    Given I login as administrator
+    And I get a user with id ${user.id}
+    When I update a user with id ${user.id} with
+      | roles | [ '${role.id}' ] |
+    Then the request succeeds
+    And the response contains
+      | roles | [ '${role.id}' ] |
+    And I get a user with id ${user.id}
+    And the response contains
+      | roles | [ '${role.id}' ] |
+
+  Scenario: Admin can remove roles
+    Given I login as administrator
+    When I update an user with id ${user.id} with
+      | roles | [] |
+    Then the request succeeds
+    And the response contains
+      | roles | [] |
+    And I get a user with id ${user.id}
+    And the response contains
+      | roles | [  ] |
 
   Scenario: Admin can verify users via update
     Given I login as administrator

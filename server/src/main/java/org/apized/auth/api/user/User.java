@@ -12,9 +12,9 @@ import org.apized.core.model.Action;
 import org.apized.core.model.Apized;
 import org.apized.core.model.BaseModel;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,14 +64,13 @@ public class User extends BaseModel {
   /**
    * List of roles associated with this user. Permissions of these roles will apply to this user.
    */
-  @ManyToMany(cascade = CascadeType.ALL)
+  @ManyToMany
   @JoinTable(
     name = "users_roles",
     joinColumns = @JoinColumn(name = "users_id"),
     inverseJoinColumns = @JoinColumn(name = "roles_id")
   )
   protected List<Role> roles = new ArrayList<>();
-
 
   @JsonIgnore
   String emailVerificationCode;
