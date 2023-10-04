@@ -197,14 +197,9 @@ class AuthSteps extends AbstractSteps {
     Map<String, String> userInput = [
       name: 'TestAuth',
       slug: 'oauth-1',
-      loginUrl: 'https://loginUrl.org',
-      accessTokenUrl: 'https://accessTokenUrl.org',
-      properties: [ : ],
-      mapping: [ : ],
-      userUrl: 'https://userUrl.org',
-      userHeaders: [ : ],
-      emailUrl: 'https://emailUrl.org',
-      emailHeaders: [ : ]
+      provider: 'Google',
+      clientId: 'client',
+      clientSecret: 'secret',
     ]
 
 //    if (table) {

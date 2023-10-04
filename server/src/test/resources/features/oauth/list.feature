@@ -3,16 +3,11 @@ Feature: List oauth
   Background:
     Given I login as administrator
     And I create an oauth with
-      | name           | TestAuth                |
-      | slug           | oauth-1                 |
-      | loginUrl       | https://loginUrl.org    |
-      | accessTokenUrl | https://accessToken.org |
-      | properties     | [ : ]                   |
-      | mapping        | [ : ]                   |
-      | userUrl        | https://userUrl.org     |
-      | userHeaders    | [ : ]                   |
-      | emailUrl       | https://emailUrl.org    |
-      | emailHeaders   | [ : ]                   |
+      | name         | TestAuth |
+      | slug         | oauth-1  |
+      | provider     | Google   |
+      | clientId     | id       |
+      | clientSecret | secret   |
     And I login as anonymous
 
   Scenario: Admin can list Oauths

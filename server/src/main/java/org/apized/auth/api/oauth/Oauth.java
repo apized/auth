@@ -18,6 +18,7 @@ import org.apized.core.model.BaseModel;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -47,7 +48,8 @@ public class Oauth extends BaseModel {
 
   @Transient
   public String getLoginUrl() {
-    return switch (getProvider()) {
+    Optional<OauthProvider> providerOptional = Optional.ofNullable(getProvider());
+    return providerOptional.isPresent() ? switch (getProvider()) {
       case Google -> String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&scope=email%%20profile&client_id=%s",
         getClientId()
@@ -68,13 +70,14 @@ public class Oauth extends BaseModel {
         "https://www.linkedin.com/oauth/v2/authorization?client_id=%s&response_type=code&scope=r_liteprofile%%20r_emailaddress",
         getClientId()
       );
-    };
+    } : null;
   }
 
   @JsonIgnore
   @Transient
   public String getAccessTokenUrl() {
-    return switch (getProvider()) {
+    Optional<OauthProvider> providerOptional = Optional.ofNullable(getProvider());
+    return providerOptional.isPresent() ? switch (getProvider()) {
       case Google ->
         "https://www.googleapis.com/oauth2/v4/token?client_id={client_id}&client_secret={client_secret}&grant_type=authorization_code";
       case Facebook ->
@@ -83,26 +86,27 @@ public class Oauth extends BaseModel {
       case Slack -> "https://slack.com/api/oauth.access?client_id={client_id}&client_secret={client_secret}";
       case LinkedIn ->
         "https://api.linkedin.com/oauth/v2/accessToken?client_id={client_id}&client_secret={client_secret}&grant_type=authorization_code";
-    };
+    } : null;
   }
 
   @JsonIgnore
   @Transient
   public String getUserUrl() {
-    return switch (getProvider()) {
+    Optional<OauthProvider> providerOptional = Optional.ofNullable(getProvider());
+    return providerOptional.isPresent() ? switch (getProvider()) {
       case Google -> "https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token={token}";
       case Facebook -> "https://graph.facebook.com/v2.8/me?fields=name,email&access_token={token}";
       case GitHub -> "https://api.github.com/user?access_token={token}";
       case LinkedIn ->
         "https://api.linkedin.com/v2/me?projection=(localizedFirstName,localizedLastName)&oauth2_access_token={token}";
       default -> null;
-    };
+    } : null;
   }
 
   @JsonIgnore
   @Transient
   public Map<String, String> getUserHeaders() {
-    if (Objects.requireNonNull(getProvider()) == OauthProvider.GitHub) {
+    if (getProvider() != null && Objects.requireNonNull(getProvider()) == OauthProvider.GitHub) {
       return Map.of("Authorization", "token {token}");
     }
     return null;
@@ -111,7 +115,7 @@ public class Oauth extends BaseModel {
   @JsonIgnore
   @Transient
   public String getEmailUrl() {
-    if (Objects.requireNonNull(getProvider()) == OauthProvider.LinkedIn) {
+    if (getProvider() != null && Objects.requireNonNull(getProvider()) == OauthProvider.LinkedIn) {
       return "https://api.linkedin.com/v2/clientAwareMemberHandles?q=members&projection=(elements*(primary,type,handle~))&oauth2_access_token={token}";
     }
     return null;
@@ -127,11 +131,12 @@ public class Oauth extends BaseModel {
   @JsonIgnore
   @Transient
   public Map<String, String> getMapping() {
-    return switch (getProvider()) {
+    Optional<OauthProvider> providerOptional = Optional.ofNullable(getProvider());
+    return providerOptional.isPresent() ? switch (getProvider()) {
       case Slack -> Map.of("name", "user.name", "email", "user.email");
       case LinkedIn ->
         Map.of("name", "localizedFirstName localizedLastName", "email", "elements.0.handle~.emailAddress");
       default -> null;
-    };
+    } : null;
   }
 }

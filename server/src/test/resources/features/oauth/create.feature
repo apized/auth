@@ -10,41 +10,26 @@ Feature: Oauth configuration creation
       | password | abcdef                   |
       | roles    | [ [ id: '${role.id}' ] ] |
     When I create an oauth with
-      | name           | TestAuth                |
-      | slug           | oauth-1                 |
-      | loginUrl       | https://loginUrl.org    |
-      | accessTokenUrl | https://accessToken.org |
-      | properties     | [ : ]                   |
-      | mapping        | [ : ]                   |
-      | userUrl        | https://loginUrl.org    |
-      | userHeaders    | [ : ]                   |
-      | emailUrl       | https://emailUrl.org    |
-      | emailHeaders   | [ : ]                   |
+      | name         | TestAuth |
+      | slug         | oauth-1  |
+      | provider     | Google   |
+      | clientId     | id       |
+      | clientSecret | secret   |
     Then the request succeeds
     And the response contains
-      | name           | TestAuth                |
-      | slug           | oauth-1                 |
-      | loginUrl       | https://loginUrl.org    |
-      | accessTokenUrl | https://accessToken.org |
-      | properties     | [ : ]                   |
-      | mapping        | [ : ]                   |
-      | userUrl        | https://loginUrl.org    |
-      | userHeaders    | [ : ]                   |
-      | emailUrl       | https://emailUrl.org    |
-      | emailHeaders   | [ : ]                   |
+      | name         | TestAuth |
+      | slug         | oauth-1  |
+      | provider     | Google   |
+      | clientId     | id       |
+      | clientSecret | secret   |
 
   Scenario: Anonymous user can't create an Oauth
     When I create an oauth with
-      | name           | TestAuth                |
-      | slug           | oauth-1                 |
-      | loginUrl       | https://loginUrl.org    |
-      | accessTokenUrl | https://accessToken.org |
-      | properties     | [ : ]                   |
-      | mapping        | [ : ]                   |
-      | userUrl        | https://loginUrl.org    |
-      | userHeaders    | [ : ]                   |
-      | emailUrl       | https://emailUrl.org    |
-      | emailHeaders   | [ : ]                   |
+      | name         | TestAuth |
+      | slug         | oauth-1  |
+      | provider     | Google   |
+      | clientId     | id       |
+      | clientSecret | secret   |
     Then the request fails
     And the response path "errors" contains element with
       | message | /.*Not allowed to create Oauth.*/ |
@@ -52,27 +37,17 @@ Feature: Oauth configuration creation
   Scenario: Creating an existing oauth should not be valid
     Given I login as administrator
     And I create an oauth with
-      | name           | TestAuth                |
-      | slug           | oauth-1                 |
-      | loginUrl       | https://loginUrl.org    |
-      | accessTokenUrl | https://accessToken.org |
-      | properties     | [ : ]                   |
-      | mapping        | [ : ]                   |
-      | userUrl        | https://loginUrl.org    |
-      | userHeaders    | [ : ]                   |
-      | emailUrl       | https://emailUrl.org    |
-      | emailHeaders   | [ : ]                   |
+      | name         | TestAuth |
+      | slug         | oauth-1  |
+      | provider     | Google   |
+      | clientId     | id       |
+      | clientSecret | secret   |
     When I create an oauth with
-      | name           | TestAuth                |
-      | slug           | oauth-1                 |
-      | loginUrl       | https://loginUrl.org    |
-      | accessTokenUrl | https://accessToken.org |
-      | properties     | [ : ]                   |
-      | mapping        | [ : ]                   |
-      | userUrl        | https://loginUrl.org    |
-      | userHeaders    | [ : ]                   |
-      | emailUrl       | https://emailUrl.org    |
-      | emailHeaders   | [ : ]                   |
+      | name         | TestAuth |
+      | slug         | oauth-1  |
+      | provider     | Google   |
+      | clientId     | id       |
+      | clientSecret | secret   |
     Then the request fails
     And the response path "errors" contains element with
       | message | DataAccessException: Error executing PERSIST: ERROR: duplicate key value violates unique constraint "oauth_slug_key"\n  Detail: Key (slug)=(oauth-1) already exists. |
@@ -80,54 +55,35 @@ Feature: Oauth configuration creation
   Scenario Outline: Oauth validation
     Given I login as administrator
     When I create an oauth with
-      | name           | <name>           |
-      | slug           | <slug>           |
-      | loginUrl       | <loginUrl>       |
-      | accessTokenUrl | <accessTokenUrl> |
-      | properties     | <properties>     |
-      | mapping        | <mapping>        |
-      | userUrl        | <userUrl>        |
-      | userHeaders    | <userHeaders>    |
-      | emailUrl       | <emailUrl>       |
-      | emailHeaders   | <emailHeaders>   |
+      | name         | <name>         |
+      | slug         | <slug>         |
+      | provider     | <provider>     |
+      | clientId     | <clientId>     |
+      | clientSecret | <clientSecret> |
     Then the request <result>
     And the response path "<path>" contains
       | <field> | <value> |
     Examples:
-      | name     | slug                 | loginUrl             | accessTokenUrl          | properties | mapping | userUrl              | userHeaders | emailUrl             | emailHeaders | result   | path     | field          | value                                 |
+      | name     | slug                    | provider | clientId | clientSecret | result   | path     | field        | value                                                                                |
       #name
-      |          | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must not be null                      |
-      | T        | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | size must be between 3 and 2147483647 |
-      | Te       | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | size must be between 3 and 2147483647 |
-      | Tes      | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | succeeds | _        | name           | Tes                                   |
+      |          | test                    | Google   | client   | secret       | fails    | errors.0 | message      | must not be null                                                                     |
+      | T        | test                    | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 2147483647                                                |
+      | Te       | test                    | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 2147483647                                                |
+      | Tes      | test                    | Google   | client   | secret       | succeeds | _        | name         | Tes                                                                                  |
       #slug
-      | TestAuth |                      | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must not be null                      |
-      | TestAuth | o                    | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | size must be between 3 and 15         |
-      | TestAuth | oa                   | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | size must be between 3 and 15         |
-      | TestAuth | oau                  | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | succeeds | _        | slug           | oau                                   |
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | succeeds | _        | slug           | oauth-1                               |
-      | TestAuth | oauth_1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must match "[a-z0-9-]+"               |
-      | TestAuth | oauth:1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must match "[a-z0-9-]+"               |
-      | TestAuth | oauth-12345678912345 | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | size must be between 3 and 15         |
-      #loginUrl
-      | TestAuth | oauth-1              |                      | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must not be null                      |
-      | TestAuth | oauth-1              | http://              | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must match "https://.+"               |
-      | TestAuth | oauth-1              | htt://loginUrl.org   | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must match "https://.+"               |
-      | TestAuth | oauth-1              | http://loginUrl.org  | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must match "https://.+"               |
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | succeeds | _        | loginUrl       | https://loginUrl.org                  |
-      #accessTokenUrl
-      | TestAuth | oauth-1              | https://loginUrl.org |                         | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | /.* null value in column .*/          |
-      | TestAuth | oauth-1              | https://loginUrl.org | https://                | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must match "https://.+"               |
-      | TestAuth | oauth-1              | https://loginUrl.org | http://accessToken.org  | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must match "https://.+"               |
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | succeeds | _        | accessTokenUrl | https://accessToken.org               |
-      #userUrl
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://             | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must match "^(\|https://.+)\\\\\\$"   |
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | htt://loginUrl.org   | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must match "^(\|https://.+)\\\\\\$"   |
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | http://loginUrl.org  | [ : ]       | https://emailUrl.org | [ : ]        | fails    | errors.0 | message        | must match "^(\|https://.+)\\\\\\$"   |
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | succeeds | _        | userUrl        | https://loginUrl.org                  |
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   |                      | [ : ]       | https://emailUrl.org | [ : ]        | succeeds | _        | userUrl        |                                       |
-      #emailUrl
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://             | [ : ]        | fails    | errors.0 | message        | must match "^(\|https://.+)\\\\\\$"   |
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | http://emailUrl.org  | [ : ]        | fails    | errors.0 | message        | must match "^(\|https://.+)\\\\\\$"   |
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       | https://emailUrl.org | [ : ]        | succeeds | _        | emailUrl       | https://emailUrl.org                  |
-      | TestAuth | oauth-1              | https://loginUrl.org | https://accessToken.org | [ : ]      | [ : ]   | https://loginUrl.org | [ : ]       |                      | [ : ]        | succeeds | _        | emailUrl       |                                       |
+      | TestAuth |                         | Google   | client   | secret       | fails    | errors.0 | message      | must not be null                                                                     |
+      | TestAuth | t                       | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 15                                                        |
+      | TestAuth | te                      | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 15                                                        |
+      | TestAuth | tes                     | Google   | client   | secret       | succeeds | _        | slug         | tes                                                                                  |
+      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | slug         | test                                                                                 |
+      | TestAuth | test-123456789123456789 | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 15                                                        |
+      #provider
+      | TestAuth | test                    |          | client   | secret       | fails    | errors.0 | message      | must not be null                                                                     |
+      | TestAuth | test                    | Fruit    | client   | secret       | fails    | errors.0 | message      | IllegalArgumentException: No enum constant org.apized.auth.oauth.OauthProvider.Fruit |
+      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | provider     | Google                                                                               |
+      #clientId
+      | TestAuth | test                    | Google   |          | secret       | fails    | errors.0 | message      | must not be null                                                                     |
+      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | clientId     | client                                                                               |
+      #clientSecret
+      | TestAuth | test                    | Google   | client   |              | fails    | errors.0 | message      | must not be null                                                                     |
+      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | clientSecret | secret                                                                               |
