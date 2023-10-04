@@ -10,17 +10,22 @@ import io.micronaut.http.cookie.SameSite;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.apized.auth.api.oauth.Oauth;
+import org.apized.auth.api.oauth.OauthService;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserService;
+import org.apized.auth.oauth.OauthClient;
 import org.apized.auth.security.AuthConverter;
 import org.apized.auth.security.BCrypt;
 import org.apized.auth.security.DBUserResolver;
 import org.apized.core.ApizedConfig;
 import org.apized.core.context.ApizedContext;
+import org.apized.core.error.exception.BadRequestException;
 import org.apized.core.error.exception.ForbiddenException;
 import org.apized.core.error.exception.UnauthorizedException;
 
-import jakarta.transaction.Transactional;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +35,12 @@ import java.util.UUID;
 public class TokenController {
   @Inject
   UserService userService;
+
+  @Inject
+  OauthService oauthService;
+
+  @Inject
+  OauthClient oauthClient;
 
   @Inject
   DBUserResolver userResolver;
@@ -69,6 +80,33 @@ public class TokenController {
       }
     } else {
       throw new UnauthorizedException("Not authorized");
+    }
+  }
+
+  @Get("/oauth/{slug}")
+  @Operation(
+    operationId = "Oauth login",
+    tags = {"Token"},
+    summary = "Login with oauth",
+    description = """
+         Login with a oauth pair
+      """)
+  public HttpResponse<Token> socialLogin(
+    @PathVariable("slug") String slug,
+    @QueryValue("code") String code,
+    @QueryValue(value = "redirect", defaultValue = "") String redirect
+  ) {
+    Oauth oauth = oauthService.findBySlug(slug).orElseThrow(() -> new BadRequestException("No such oauth " + slug));
+    User user = oauthClient.getUser(oauth, code, redirect);
+    if (user != null) {
+      if (!user.isVerified()) {
+        user.setVerified(true);
+        user.setEmailVerificationCode(null);
+        userService.update(user.getId(), user);
+      }
+      return getHttpResponse(AuthConverter.convertAuthUserToApizedUser(user));
+    } else {
+      throw new BadRequestException("No user found");
     }
   }
 

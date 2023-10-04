@@ -54,3 +54,23 @@ create table users_roles
     constraint fk_user_roles_user_id_user foreign key (users_id) references "user" (id),
     constraint fk_user_roles_roles_id_role foreign key (roles_id) references role (id)
 );
+
+create table oauth
+(
+    id              uuid         not null primary key,
+    created_at      timestamp,
+    created_by      uuid,
+    last_updated_at timestamp,
+    last_updated_by uuid,
+    version         bigint       not null,
+    metadata        jsonb default '{}',
+
+    name            varchar(255) not null,
+    slug            varchar(255) not null unique,
+    provider        varchar(255) not null,
+    client_id       varchar(255) not null,
+    client_secret   varchar(255) not null
+);
+
+create index idx_users_roles_users_id on users_roles (users_id);
+create index idx_users_roles_roles_id on users_roles (roles_id);

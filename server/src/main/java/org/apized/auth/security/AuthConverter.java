@@ -3,7 +3,9 @@ package org.apized.auth.security;
 import org.apized.auth.api.role.Role;
 import org.apized.auth.api.user.User;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public abstract class AuthConverter {
   public static org.apized.core.security.model.User convertAuthUserToApizedUser(User user) {
@@ -13,7 +15,8 @@ public abstract class AuthConverter {
       user.getName(),
       user.getRoles().stream().map(AuthConverter::convertAuthRoleToApizedRole).toList(),
       user.getPermissions(),
-      List.of()
+      new ArrayList<>(),
+      Map.of()
     );
   }
 

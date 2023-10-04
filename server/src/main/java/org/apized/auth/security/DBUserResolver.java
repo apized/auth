@@ -21,10 +21,7 @@ import org.apized.micronaut.server.ApizedStartupEvent;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Singleton
@@ -82,7 +79,8 @@ public class DBUserResolver implements UserResolver {
         "Anonymous",
         List.of(AuthConverter.convertAuthRoleToApizedRole(defaultRole)),
         List.of(),
-        List.of()
+        List.of(),
+        Map.of()
       ));
   }
 
@@ -128,7 +126,11 @@ public class DBUserResolver implements UserResolver {
         Role role = new Role();
         role.setName("Default");
         role.setDescription("The default role contains the permissions any user should get, including anonymous access");
-        role.setPermissions(List.of("auth.user.create"));
+        role.setPermissions(List.of(
+          "auth.user.create",
+          "auth.oauth.list",
+          "auth.oauth.get"
+        ));
         role.getMetadata().put("default", true);
         return Optional.ofNullable(roleRepository.create(role));
       }

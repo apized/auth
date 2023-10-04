@@ -3,13 +3,15 @@ micronaut:
     name: Auth Server
 
   server:
-    port: ${PORT:8080}
+    port: ${PORT:80}
     cors:
       enabled: true
       configurations:
         all:
-          allowedOrigins:
-            - ^https?:\/\/.*$
+          allowed-origins-regex: '^https?:\/\/.*$'
+
+  otel:
+    enabled: ${OTEL_ENABLED:false}
 
   router:
     static-resources:
@@ -60,6 +62,36 @@ datasources:
     username: ${DB_USER:postgres}
     password: ${DB_PASS:postgres}
 
+otel:
+  traces:
+    exporter: otlp
+  metrics:
+    exporter: otlp
+  logs:
+    exporter: otlp
+  exporter:
+    otlp:
+      endpoint: ${OTEL_ENDPOINT:`https://otel.example.com`}
+      headers: ${OTEL_HEADERS:}
+      compression: ${OTEL_COMPRESSION:gzip}
+      key: ${OTEL_KEY:}
+      instance: ${HOSTNAME:local}
+    experimental:
+      expoter:
+        otlp:
+          retry:
+            enabled: true
+    metric:
+      export:
+        interval: 5000
+    resource:
+      attributes: "service.instance.id=${HOSTNAME:local}"
+
+  exclusions:
+    - /health.*
+    - /sample/.*
+    - /swagger.*
+
 apized:
   slug: auth
 
@@ -71,9 +103,12 @@ auth:
     domain: ${AUTH_DOMAIN:apized.org}
     secure: ${AUTH_SECURE:true}
 
+oauth:
+  baseUrl: ${BASE_URL:`https://auth-web.serveo.net`}
+
 sendgrid:
-  api-key: ${SENDGRID_API_KEY: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}
-  from: encavadas@gmail.com
+  api-key: ${SENDGRID_API_KEY:}
+  from: ${SENDGRID_API_FROM:}
   templates:
-    user-verification: d-4724e366c66c4cf6888692cc9f2403d6
-    password-reset: d-918d971b8e6f41adaab018ba65f8b701
+    user-verification: ${SENDGRID_USER_VERIFICATION_TEMPLATE:}
+    password-reset: ${SENDGRID_PASSWORD_RESET_TEMPLATE:}

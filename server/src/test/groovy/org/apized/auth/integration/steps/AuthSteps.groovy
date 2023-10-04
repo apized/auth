@@ -153,7 +153,7 @@ class AuthSteps extends AbstractSteps {
       Response response = testRunner.getClient(context)
         .body()
         .get(context.eval("/integration/users/$userId/emailVerificationCode").toString())
-      context.responses[alias] = response.asString()
+      context.responses[ alias ] = response.asString()
     })
   }
 
@@ -164,7 +164,7 @@ class AuthSteps extends AbstractSteps {
       Response response = testRunner.getClient(context)
         .body()
         .get(context.eval("/integration/users/$userId/passwordResetCode").toString())
-      context.responses[alias] = response.asString()
+      context.responses[ alias ] = response.asString()
     })
   }
 
@@ -190,5 +190,33 @@ class AuthSteps extends AbstractSteps {
       .body(JsonOutput.toJson([ code: context.eval(code), password: password ]))
       .post(context.eval("/users/$username/password").toString())
     context.addResponse('code', (response.statusCode() / 100 as int) == 2, response.asString(), null)
+  }
+
+  @When('^there is an oauth named "(.+)" as ([^\\s]+)$')
+  void createAliasedOauth(String name, String alias) {
+    Map<String, String> userInput = [
+      name: 'TestAuth',
+      slug: 'oauth-1',
+      loginUrl: 'https://loginUrl.org',
+      accessTokenUrl: 'https://accessTokenUrl.org',
+      properties: [ : ],
+      mapping: [ : ],
+      userUrl: 'https://userUrl.org',
+      userHeaders: [ : ],
+      emailUrl: 'https://emailUrl.org',
+      emailHeaders: [ : ]
+    ]
+
+//    if (table) {
+//      userInput.putAll(table.asMap(String, String))
+//    }
+
+    userInput.name = name
+    executeAs('administrator', () -> {
+      Response response = testRunner.getClient()
+        .body(JsonOutput.toJson(userInput))
+        .post(context.eval("/oauths") as String)
+      context.addResponse('oauth', (response.statusCode() / 100 as int) == 2, response.asString(), alias)
+    })
   }
 }
