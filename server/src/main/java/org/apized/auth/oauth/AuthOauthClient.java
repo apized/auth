@@ -18,9 +18,6 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class AuthOauthClient implements OauthClient {
-  @Value("${oauth.baseUrl}")
-  String baseUrl;
-
   @Inject
   UserService userService;
 
@@ -34,8 +31,7 @@ public class AuthOauthClient implements OauthClient {
   @Override
   public User getUser(Oauth oauth, String code, String redirect) {
     Argument<Map> responseType = Argument.of(Map.class, String.class, Object.class);
-    String accessUrl = oauth.getAccessTokenUrl() + "&code=" + code + "&redirect_uri=" +
-      (!redirect.isBlank() ? redirect : baseUrl + "/auth/login/" + oauth.getSlug());
+    String accessUrl = oauth.getAccessTokenUrl() + "&code=" + code + "&redirect_uri=" + redirect;
 
     Map<String, Object> props = new HashMap<>(
       Arrays.stream((accessUrl).split("\\?")[1].split("&"))

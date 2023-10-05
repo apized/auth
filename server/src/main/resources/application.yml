@@ -103,9 +103,6 @@ auth:
     domain: ${AUTH_DOMAIN:apized.org}
     secure: ${AUTH_SECURE:true}
 
-oauth:
-  baseUrl: ${BASE_URL:`https://auth-web.serveo.net`}
-
 sendgrid:
   api-key: ${SENDGRID_API_KEY:}
   from: ${SENDGRID_API_FROM:}

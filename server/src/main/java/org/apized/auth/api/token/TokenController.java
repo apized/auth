@@ -94,7 +94,7 @@ public class TokenController {
   public HttpResponse<Token> socialLogin(
     @PathVariable("slug") String slug,
     @QueryValue("code") String code,
-    @QueryValue(value = "redirect", defaultValue = "") String redirect
+    @QueryValue(value = "redirect") String redirect
   ) {
     Oauth oauth = oauthService.findBySlug(slug).orElseThrow(() -> new BadRequestException("No such oauth " + slug));
     User user = oauthClient.getUser(oauth, code, redirect);
