@@ -96,12 +96,14 @@ apized:
   slug: auth
 
 auth:
+  frontendUrl: ${AUTH_FRONTEND_URL:https://auth-web.apized.org}
+  backendUrl: ${AUTH_BACKEND_URL:https://auth-server.apized.org}
   token:
-    duration: ${AUTH_DURATION:3600}
-    secret: ${AUTH_SECRET:boatymcboatface}
+    duration: ${AUTH_TOKEN_DURATION:3600}
+    secret: ${AUTH_TOKEN_SECRET:boatymcboatface}
   cookie:
-    domain: ${AUTH_DOMAIN:apized.org}
-    secure: ${AUTH_SECURE:true}
+    domain: ${AUTH_TOKEN_DOMAIN:apized.org}
+    secure: ${AUTH_TOKEN_SECURE:true}
 
 sendgrid:
   api-key: ${SENDGRID_API_KEY:}

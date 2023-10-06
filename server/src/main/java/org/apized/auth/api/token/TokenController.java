@@ -3,14 +3,17 @@ package org.apized.auth.api.token;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.*;
 import io.micronaut.http.cookie.CookieFactory;
 import io.micronaut.http.cookie.SameSite;
+import io.micronaut.serde.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import lombok.SneakyThrows;
 import org.apized.auth.api.oauth.Oauth;
 import org.apized.auth.api.oauth.OauthService;
 import org.apized.auth.api.user.User;
@@ -25,7 +28,8 @@ import org.apized.core.error.exception.BadRequestException;
 import org.apized.core.error.exception.ForbiddenException;
 import org.apized.core.error.exception.UnauthorizedException;
 
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,6 +37,9 @@ import java.util.UUID;
 @Transactional
 @Controller("/tokens")
 public class TokenController {
+  @Inject
+  ObjectMapper mapper;
+
   @Inject
   UserService userService;
 
@@ -47,6 +54,9 @@ public class TokenController {
 
   @Inject
   ApizedConfig config;
+
+  @Value("${auth.backendUrl}")
+  String backendUrl;
 
   @Value("${auth.cookie.domain}")
   String cookieDomain;
@@ -91,20 +101,57 @@ public class TokenController {
     description = """
          Login with a oauth pair
       """)
-  public HttpResponse<Token> socialLogin(
+  public HttpResponse<?> socialLogin(
     @PathVariable("slug") String slug,
     @QueryValue("code") String code,
     @QueryValue(value = "redirect") String redirect
   ) {
     Oauth oauth = oauthService.findBySlug(slug).orElseThrow(() -> new BadRequestException("No such oauth " + slug));
-    User user = oauthClient.getUser(oauth, code, redirect);
+    User user = oauthClient.getUser(oauth, code, new HashMap<>(), redirect.replaceAll("(?<!:)[/]{2,}", "/"));
     if (user != null) {
       if (!user.isVerified()) {
         user.setVerified(true);
         user.setEmailVerificationCode(null);
         userService.update(user.getId(), user);
       }
-      return getHttpResponse(AuthConverter.convertAuthUserToApizedUser(user));
+      return getHttpResponse(AuthConverter.convertAuthUserToApizedUser(user))
+        .contentType(MediaType.TEXT_HTML_TYPE)
+        .body("<html><head></head><body><script>debugger;window.close();window.history.back();</script></body></html>");
+    } else {
+      throw new BadRequestException("No user found");
+    }
+  }
+
+  @SneakyThrows
+  @SuppressWarnings("unchecked")
+  @Post(value = "/oauth/{slug}", consumes = {"application/json", "application/x-www-form-urlencoded"})
+  @Operation(
+    operationId = "Oauth login",
+    tags = {"Token"},
+    summary = "Login with oauth",
+    description = """
+         Login with a oauth pair
+      """)
+  public HttpResponse<?> socialLogin(
+    @PathVariable("slug") String slug,
+    @Body Map<String, String> payload
+  ) {
+    Oauth oauth = oauthService.findBySlug(slug).orElseThrow(() -> new BadRequestException("No such oauth " + slug));
+    User user = oauthClient.getUser(
+      oauth,
+      payload.get("code"),
+      mapper.readValue(payload.getOrDefault("user", "{ \"name\": { \"firstName\": \"Unknown\", \"lastName\": \"User\" } }"), Map.class),
+      String.format("%s/tokens/oauth/apple", backendUrl)
+    );
+    if (user != null) {
+      if (!user.isVerified()) {
+        user.setVerified(true);
+        user.setEmailVerificationCode(null);
+        userService.update(user.getId(), user);
+      }
+      return getHttpResponse(AuthConverter.convertAuthUserToApizedUser(user))
+        .contentType(MediaType.TEXT_HTML_TYPE)
+        .body("<html><head></head><body><script>debugger;window.close();window.history.back();</script></body></html>");
     } else {
       throw new BadRequestException("No user found");
     }

@@ -69,7 +69,7 @@ create table oauth
     slug            varchar(255) not null unique,
     provider        varchar(255) not null,
     client_id       varchar(255) not null,
-    client_secret   varchar(255) not null
+    client_secret   text         not null
 );
 
 create index idx_users_roles_users_id on users_roles (users_id);

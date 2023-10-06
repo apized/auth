@@ -1,6 +1,5 @@
 package org.apized.auth.oauth;
 
-import io.micronaut.context.annotation.Value;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.HttpClient;
@@ -29,7 +28,7 @@ public class AuthOauthClient implements OauthClient {
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
-  public User getUser(Oauth oauth, String code, String redirect) {
+  public User getUser(Oauth oauth, String code, Map<String, Object> defaults, String redirect) {
     Argument<Map> responseType = Argument.of(Map.class, String.class, Object.class);
     String accessUrl = oauth.getAccessTokenUrl() + "&code=" + code + "&redirect_uri=" + redirect;
 
@@ -39,17 +38,16 @@ public class AuthOauthClient implements OauthClient {
         .collect(Collectors.toMap(it -> it[0], it -> it[1]))
     );
     props.put("client_id", oauth.getClientId());
-    props.put("client_secret", oauth.getClientSecret());
+    props.put("client_secret", oauth.getComputedClientSecret());
 
-    Map<String, Object> accessTokenResponse = client.toBlocking().exchange(
+    defaults.putAll(client.toBlocking().exchange(
       HttpRequest.POST(
         applyPropsToString(accessUrl, props),
         props
       ),
       responseType
-    ).body();
-
-    props.put("token", Objects.requireNonNull(accessTokenResponse).get("access_token"));
+    ).body());
+    props.put("token", oauth.getAccessTokenFrom(defaults));
 
     Map<String, Object> userResponse = oauth.getUserUrl() != null && !oauth.getUserUrl().isBlank() ?
       client.toBlocking()
@@ -62,15 +60,15 @@ public class AuthOauthClient implements OauthClient {
             ),
           responseType
         )
-        .body() : accessTokenResponse;
+        .body() : defaults;
 
     Map<String, Object> emailResponse = oauth.getEmailUrl() != null && !oauth.getEmailUrl().isBlank() ?
       client.toBlocking()
         .exchange(
           HttpRequest.GET(
-            applyPropsToString(oauth.getEmailUrl(), props)
+            applyPropsToString(oauth.getEmailUrl(), defaults)
           ).headers(
-            applyPropsToHeaders(oauth.getEmailHeaders(), props)
+            applyPropsToHeaders(oauth.getEmailHeaders(), defaults)
           ),
           responseType
         )

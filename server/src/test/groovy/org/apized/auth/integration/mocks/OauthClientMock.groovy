@@ -18,8 +18,8 @@ class OauthClientMock extends AbstractServiceIntegrationMock implements OauthCli
   }
 
   @Override
-  User getUser(Oauth oauth, String code, String redirect) {
-    addExecution('getUser', [ oauth: oauth, code: code ])
+  User getUser(Oauth oauth, String code, Map<String, Object> props, String redirect) {
+    addExecution('getUser', [ oauth: oauth, code: code, props: props, redirect: redirect ])
     if (getExpectation('getUser')) {
       mapper.readValue(getExpectation('getUser'), User)
     } else {
