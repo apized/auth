@@ -3,8 +3,10 @@ package org.apized.auth.oauth;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.HttpClient;
+import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 import org.apized.auth.api.oauth.Oauth;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserService;
@@ -15,6 +17,7 @@ import org.apized.core.context.ApizedContext;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Singleton
 public class AuthOauthClient implements OauthClient {
   @Inject
@@ -29,73 +32,78 @@ public class AuthOauthClient implements OauthClient {
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
   public User getUser(Oauth oauth, String code, Map<String, Object> defaults, String redirect) {
-    Argument<Map> responseType = Argument.of(Map.class, String.class, Object.class);
-    String accessUrl = oauth.getAccessTokenUrl() + "&code=" + code + "&redirect_uri=" + redirect;
+    try {
+      Argument<Map> responseType = Argument.of(Map.class, String.class, Object.class);
+      String accessUrl = oauth.getAccessTokenUrl() + "&code=" + code + "&redirect_uri=" + redirect;
 
-    Map<String, Object> props = new HashMap<>(
-      Arrays.stream((accessUrl).split("\\?")[1].split("&"))
-        .map(it -> it.split("="))
-        .collect(Collectors.toMap(it -> it[0], it -> it[1]))
-    );
-    props.put("client_id", oauth.getClientId());
-    props.put("client_secret", oauth.getComputedClientSecret());
+      Map<String, Object> props = new HashMap<>(
+        Arrays.stream((accessUrl).split("\\?")[1].split("&"))
+          .map(it -> it.split("="))
+          .collect(Collectors.toMap(it -> it[0], it -> it[1]))
+      );
+      props.put("client_id", oauth.getClientId());
+      props.put("client_secret", oauth.getComputedClientSecret());
 
-    defaults.putAll(client.toBlocking().exchange(
-      HttpRequest.POST(
-        applyPropsToString(accessUrl, props),
-        props
-      ),
-      responseType
-    ).body());
-    props.put("token", oauth.getAccessTokenFrom(defaults));
+      defaults.putAll(client.toBlocking().exchange(
+        HttpRequest.POST(
+          applyPropsToString(accessUrl, props),
+          props
+        ),
+        responseType
+      ).body());
+      props.put("token", oauth.getAccessTokenFrom(defaults));
 
-    Map<String, Object> userResponse = oauth.getUserUrl() != null && !oauth.getUserUrl().isBlank() ?
-      client.toBlocking()
-        .exchange(
-          HttpRequest.GET(
-              applyPropsToString(oauth.getUserUrl(), props)
-            )
-            .headers(
-              applyPropsToHeaders(oauth.getUserHeaders(), props)
+      Map<String, Object> userResponse = oauth.getUserUrl() != null && !oauth.getUserUrl().isBlank() ?
+        client.toBlocking()
+          .exchange(
+            HttpRequest.GET(
+                applyPropsToString(oauth.getUserUrl(), props)
+              )
+              .headers(
+                applyPropsToHeaders(oauth.getUserHeaders(), props)
+              ),
+            responseType
+          )
+          .body() : defaults;
+
+      Map<String, Object> emailResponse = oauth.getEmailUrl() != null && !oauth.getEmailUrl().isBlank() ?
+        client.toBlocking()
+          .exchange(
+            HttpRequest.GET(
+              applyPropsToString(oauth.getEmailUrl(), defaults)
+            ).headers(
+              applyPropsToHeaders(oauth.getEmailHeaders(), defaults)
             ),
-          responseType
-        )
-        .body() : defaults;
+            responseType
+          )
+          .body() : userResponse;
 
-    Map<String, Object> emailResponse = oauth.getEmailUrl() != null && !oauth.getEmailUrl().isBlank() ?
-      client.toBlocking()
-        .exchange(
-          HttpRequest.GET(
-            applyPropsToString(oauth.getEmailUrl(), defaults)
-          ).headers(
-            applyPropsToHeaders(oauth.getEmailHeaders(), defaults)
-          ),
-          responseType
-        )
-        .body() : userResponse;
+      List<String> namePath = oauth.getMapping() != null && oauth.getMapping().get("name") != null ? List.of(oauth.getMapping().get("name").split(" ")) : List.of("name");
+      List<String> emailPath = oauth.getMapping() != null && oauth.getMapping().get("email") != null ? List.of(oauth.getMapping().get("email").split(" ")) : List.of("email");
 
-    List<String> namePath = oauth.getMapping() != null && oauth.getMapping().get("name") != null ? List.of(oauth.getMapping().get("name").split(" ")) : List.of("name");
-    List<String> emailPath = oauth.getMapping() != null && oauth.getMapping().get("email") != null ? List.of(oauth.getMapping().get("email").split(" ")) : List.of("email");
+      String name = namePath.stream().map(path -> fetchPathInObject(path, userResponse)).collect(Collectors.joining(" "));
+      String email = emailPath.stream().map(path -> fetchPathInObject(path, emailResponse)).collect(Collectors.joining(" "));
 
-    String name = namePath.stream().map(path -> fetchPathInObject(path, userResponse)).collect(Collectors.joining(" "));
-    String email = emailPath.stream().map(path -> fetchPathInObject(path, emailResponse)).collect(Collectors.joining(" "));
+      return userService.findByUsername(email).orElseGet(() -> {
+        User newUser = new User();
+        newUser.setId(UUID.randomUUID());
+        newUser.setUsername(email);
+        newUser.setPassword(UUID.randomUUID().toString());
+        newUser.setName(name);
+        newUser.setVerified(true);
+        newUser.setRoles(List.of(userResolver.getDefaultRole()));
+        org.apized.core.security.model.User user = AuthConverter.convertAuthUserToApizedUser(newUser);
+        user.getInferredPermissions().add("*");
 
-    return userService.findByUsername(email).orElseGet(() -> {
-      User newUser = new User();
-      newUser.setId(UUID.randomUUID());
-      newUser.setUsername(email);
-      newUser.setPassword(UUID.randomUUID().toString());
-      newUser.setName(name);
-      newUser.setVerified(true);
-      newUser.setRoles(List.of(userResolver.getDefaultRole()));
-      org.apized.core.security.model.User user = AuthConverter.convertAuthUserToApizedUser(newUser);
-      user.getInferredPermissions().add("*");
+        ApizedContext.getSecurity().setUser(user);
+        userService.create(newUser);
 
-      ApizedContext.getSecurity().setUser(user);
-      userService.create(newUser);
-
-      return newUser;
-    });
+        return newUser;
+      });
+    } catch (HttpClientResponseException e) {
+      log.error(e.getResponse().getBody().toString());
+      throw e;
+    }
   }
 
   @SuppressWarnings("unchecked")
