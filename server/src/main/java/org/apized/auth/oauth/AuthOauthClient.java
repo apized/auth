@@ -1,14 +1,14 @@
 package org.apized.auth.oauth;
 
-import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.HttpClient;
+import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
-import jakarta.annotation.PostConstruct;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apized.auth.api.oauth.Oauth;
 import org.apized.auth.api.user.User;
@@ -30,18 +30,11 @@ public class AuthOauthClient implements OauthClient {
   DBUserResolver userResolver;
 
   @Inject
-  ApplicationContext applicationContext;
-
   HttpClient client;
-
-  @SneakyThrows
-  @PostConstruct
-  public void init() {
-    client = applicationContext.createBean(HttpClient.class);
-  }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
+  @ExecuteOn(TaskExecutors.BLOCKING)
   public User getUser(Oauth oauth, String code, Map<String, Object> defaults, String redirect) {
     try {
       Argument<Map> responseType = Argument.of(Map.class, String.class, Object.class);
