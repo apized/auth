@@ -1,14 +1,11 @@
 package org.apized.auth.oauth;
 
 import io.micronaut.core.type.Argument;
-import io.micronaut.http.HttpRequest;
-import io.micronaut.http.client.HttpClient;
-import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
-import io.micronaut.scheduling.TaskExecutors;
-import io.micronaut.scheduling.annotation.ExecuteOn;
+import io.micronaut.serde.ObjectMapper;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apized.auth.api.oauth.Oauth;
 import org.apized.auth.api.user.User;
@@ -17,6 +14,10 @@ import org.apized.auth.security.AuthConverter;
 import org.apized.auth.security.DBUserResolver;
 import org.apized.core.context.ApizedContext;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,11 +31,13 @@ public class AuthOauthClient implements OauthClient {
   DBUserResolver userResolver;
 
   @Inject
-  HttpClient client;
+  ObjectMapper mapper;
 
+  HttpClient client = HttpClient.newHttpClient();
+
+  @SneakyThrows
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
-  @ExecuteOn(TaskExecutors.BLOCKING)
   public User getUser(Oauth oauth, String code, Map<String, Object> defaults, String redirect) {
     try {
       Argument<Map> responseType = Argument.of(Map.class, String.class, Object.class);
@@ -48,39 +51,38 @@ public class AuthOauthClient implements OauthClient {
       props.put("client_id", oauth.getClientId());
       props.put("client_secret", oauth.getComputedClientSecret());
 
-      defaults.putAll(client.toBlocking().exchange(
-        HttpRequest.POST(
-          applyPropsToString(accessUrl, props),
-          props
-        ),
-        responseType
-      ).body());
+      defaults.putAll(
+        mapper.readValue(client.send(
+          HttpRequest.newBuilder()
+            .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(props)))
+            .uri(new URI(applyPropsToString(accessUrl, props)))
+            .build(),
+          HttpResponse.BodyHandlers.ofString()
+        ).body(), responseType)
+      );
       props.put("token", oauth.getAccessTokenFrom(defaults));
 
       Map<String, Object> userResponse = oauth.getUserUrl() != null && !oauth.getUserUrl().isBlank() ?
-        client.toBlocking()
-          .exchange(
-            HttpRequest.GET(
-                applyPropsToString(oauth.getUserUrl(), props)
-              )
-              .headers(
-                applyPropsToHeaders(oauth.getUserHeaders(), props)
-              ),
-            responseType
+        mapper.readValue(client.send(
+            HttpRequest.newBuilder()
+              .GET()
+              .uri(new URI(applyPropsToString(oauth.getUserUrl(), props)))
+              .headers(headersFor(oauth.getUserHeaders(), props))
+              .build(),
+            HttpResponse.BodyHandlers.ofString()
           )
-          .body() : defaults;
+          .body(), responseType) : defaults;
 
       Map<String, Object> emailResponse = oauth.getEmailUrl() != null && !oauth.getEmailUrl().isBlank() ?
-        client.toBlocking()
-          .exchange(
-            HttpRequest.GET(
-              applyPropsToString(oauth.getEmailUrl(), defaults)
-            ).headers(
-              applyPropsToHeaders(oauth.getEmailHeaders(), defaults)
-            ),
-            responseType
+        mapper.readValue(client.send(
+            HttpRequest.newBuilder()
+              .GET()
+              .uri(new URI(applyPropsToString(oauth.getEmailUrl(), defaults)))
+              .headers(headersFor(oauth.getEmailHeaders(), defaults))
+              .build(),
+            HttpResponse.BodyHandlers.ofString()
           )
-          .body() : userResponse;
+          .body(), responseType) : userResponse;
 
       List<String> namePath = oauth.getMapping() != null && oauth.getMapping().get("name") != null ? List.of(oauth.getMapping().get("name").split(" ")) : List.of("name");
       List<String> emailPath = oauth.getMapping() != null && oauth.getMapping().get("email") != null ? List.of(oauth.getMapping().get("email").split(" ")) : List.of("email");
@@ -122,13 +124,14 @@ public class AuthOauthClient implements OauthClient {
     return obj.toString();
   }
 
-  private Map<CharSequence, CharSequence> applyPropsToHeaders(Map<String, String> headers, Map<String, Object> props) {
-    Map<CharSequence, CharSequence> result = new HashMap<>();
+  private String[] headersFor(Map<String, String> headers, Map<String, Object> props) {
+    List<String> result = new ArrayList<>();
     headers = headers != null ? headers : Collections.emptyMap();
     for (Map.Entry<String, String> entry : headers.entrySet()) {
-      result.put(entry.getKey(), applyPropsToString(entry.getValue(), props));
+      result.add(entry.getKey());
+      result.add(applyPropsToString(entry.getValue(), props));
     }
-    return result;
+    return result.toArray(new String[0]);
   }
 
   private String applyPropsToString(String string, Map<String, Object> props) {
