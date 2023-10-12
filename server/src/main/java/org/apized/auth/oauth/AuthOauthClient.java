@@ -17,7 +17,6 @@ import org.apized.auth.security.AuthConverter;
 import org.apized.auth.security.DBUserResolver;
 import org.apized.core.context.ApizedContext;
 
-import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,7 +30,7 @@ public class AuthOauthClient implements OauthClient {
   DBUserResolver userResolver;
 
   @Inject
-  private ApplicationContext applicationContext;
+  ApplicationContext applicationContext;
 
   HttpClient client;
 
