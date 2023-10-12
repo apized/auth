@@ -126,6 +126,8 @@ public class AuthOauthClient implements OauthClient {
 
   private String[] headersFor(Map<String, String> headers, Map<String, Object> props) {
     List<String> result = new ArrayList<>();
+    result.add("dummy");
+    result.add("dummy");
     headers = headers != null ? headers : Collections.emptyMap();
     for (Map.Entry<String, String> entry : headers.entrySet()) {
       result.add(entry.getKey());
