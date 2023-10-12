@@ -1,11 +1,14 @@
 package org.apized.auth.oauth;
 
+import io.micronaut.context.ApplicationContext;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apized.auth.api.oauth.Oauth;
 import org.apized.auth.api.user.User;
@@ -14,6 +17,7 @@ import org.apized.auth.security.AuthConverter;
 import org.apized.auth.security.DBUserResolver;
 import org.apized.core.context.ApizedContext;
 
+import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,7 +31,15 @@ public class AuthOauthClient implements OauthClient {
   DBUserResolver userResolver;
 
   @Inject
+  private ApplicationContext applicationContext;
+
   HttpClient client;
+
+  @SneakyThrows
+  @PostConstruct
+  public void init() {
+    client = applicationContext.createBean(HttpClient.class);
+  }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
