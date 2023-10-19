@@ -36,7 +36,7 @@ public class AuthUserResolver implements UserResolver {
   public User getUser(String token) {
     log.debug("Fetching user from token {}", token);
 
-    String uri = config.getFederation().get("auth") + "/auth/tokens/" + token + "/user?fields=*,roles.id,roles.name,roles.permissions";
+    String uri = config.getFederation().get("auth") + "/tokens/" + token + "?fields=*,roles.id,roles.name,roles.permissions";
     HttpRequest request = HttpRequest.newBuilder()
       .uri(new URI(uri))
       .header("AUTHORIZATION", String.format("Bearer %s", config.getToken()))
@@ -56,7 +56,7 @@ public class AuthUserResolver implements UserResolver {
   public User getUser(UUID userId) {
     log.debug("Fetching user by id {}", userId);
 
-    String uri = config.getFederation().get("auth") + "/auth/users/" + userId + "?fields=*,roles.id,roles.name,roles.permissions";
+    String uri = config.getFederation().get("auth") + "/users/" + userId + "?fields=*,roles.id,roles.name,roles.permissions";
     HttpRequest request = HttpRequest.newBuilder()
       .uri(new URI(uri))
       .header("AUTHORIZATION", String.format("Bearer %s", config.getToken()))
@@ -70,34 +70,6 @@ public class AuthUserResolver implements UserResolver {
       User.class
     );
   }
-
-  @Override
-  @SneakyThrows
-  public User ensureUser(User user) {
-    String uri = config.getFederation().get("auth") + "/auth/users/" + user.getId() + "/ensure?verified=false&fields=id";
-    HttpRequest request = HttpRequest.newBuilder()
-      .method("POST", HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(
-          Map.of(
-            "id", user.getId(),
-            "name", user.getName(),
-            "username", user.getUsername()
-          )
-        )
-      ))
-      .uri(new URI(uri))
-      .header("Content-type", "application/json")
-      .header("AUTHORIZATION", String.format("Bearer %s", config.getToken()))
-      .build();
-
-    return mapper.readValue(
-      client.send(
-        request,
-        HttpResponse.BodyHandlers.ofString()
-      ).body(),
-      User.class
-    );
-  }
-
 
   @Override
   @SneakyThrows

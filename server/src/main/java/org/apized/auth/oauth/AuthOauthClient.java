@@ -51,15 +51,27 @@ public class AuthOauthClient implements OauthClient {
       props.put("client_id", oauth.getClientId());
       props.put("client_secret", oauth.getComputedClientSecret());
 
-      defaults.putAll(
-        mapper.readValue(client.send(
-          HttpRequest.newBuilder()
-            .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(props)))
-            .uri(new URI(applyPropsToString(accessUrl, props)))
-            .build(),
-          HttpResponse.BodyHandlers.ofString()
-        ).body(), responseType)
-      );
+      if (oauth.getProvider().equals(OauthProvider.Microsoft)) {
+        defaults.putAll(
+          mapper.readValue(client.send(
+            HttpRequest.newBuilder()
+              .POST(HttpRequest.BodyPublishers.ofString(props.entrySet().stream().map((e) -> String.format("%s=%s", e.getKey(), e.getValue())).collect(Collectors.joining("&"))))
+              .uri(new URI(applyPropsToString(accessUrl, props)))
+              .build(),
+            HttpResponse.BodyHandlers.ofString()
+          ).body(), responseType)
+        );
+      } else {
+        defaults.putAll(
+          mapper.readValue(client.send(
+            HttpRequest.newBuilder()
+              .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(props)))
+              .uri(new URI(applyPropsToString(accessUrl, props)))
+              .build(),
+            HttpResponse.BodyHandlers.ofString()
+          ).body(), responseType)
+        );
+      }
       props.put("token", oauth.getAccessTokenFrom(defaults));
 
       Map<String, Object> userResponse = oauth.getUserUrl() != null && !oauth.getUserUrl().isBlank() ?

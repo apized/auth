@@ -91,11 +91,6 @@ public class DBUserResolver implements UserResolver {
   }
 
   @Override
-  public org.apized.core.security.model.User ensureUser(org.apized.core.security.model.User user) {
-    return null; // Not necessary for internal use
-  }
-
-  @Override
   public String generateToken(org.apized.core.security.model.User user, boolean expiring) {
     Date issuedAt = new Date();
     JWTCreator.Builder builder = JWT.create()

@@ -2,6 +2,7 @@ package org.apized.auth.api.oauth;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.Entity;
@@ -91,6 +92,10 @@ public class Oauth extends BaseModel {
         "https://appleid.apple.com/auth/authorize?client_id=%s&response_type=code&response_mode=form_post&scope=name%%20email",
         getClientId()
       );
+      case Microsoft -> String.format(
+        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?response_type=code&client_id=%s&scope=openid%%20email%%20profile",
+        getClientId()
+      );
       case Facebook -> String.format(
         "https://www.facebook.com/dialog/oauth?response_type=code&client_id=%s&scope=email",
         getClientId()
@@ -119,6 +124,8 @@ public class Oauth extends BaseModel {
         "https://www.googleapis.com/oauth2/v4/token?client_id={client_id}&client_secret={client_secret}&grant_type=authorization_code";
       case Apple ->
         "https://appleid.apple.com/auth/token?client_id={client_id}&client_secret={client_secret}&grant_type=authorization_code";
+      case Microsoft ->
+        "https://login.microsoftonline.com/common/oauth2/v2.0/token?client_id={client_id}&client_secret={client_secret}&grant_type=authorization_code";
       case Facebook ->
         "https://graph.facebook.com/v2.8/oauth/access_token?client_id={client_id}&client_secret={client_secret}";
       case GitHub -> "https://github.com/login/oauth/access_token?client_id={client_id}&client_secret={client_secret}";
@@ -134,6 +141,10 @@ public class Oauth extends BaseModel {
       accessTokenResponse.put(
         "email", JWT.decode((String) accessTokenResponse.get("id_token")).getClaim("email").asString()
       );
+    } else if (providerOptional.isPresent() && providerOptional.get().equals(OauthProvider.Microsoft)) {
+      DecodedJWT jwt = JWT.decode((String) accessTokenResponse.get("id_token"));
+      accessTokenResponse.put("name", jwt.getClaim("name").asString());
+      accessTokenResponse.put("email", jwt.getClaim("email").asString());
     }
     return (String) accessTokenResponse.get("access_token");
   }
