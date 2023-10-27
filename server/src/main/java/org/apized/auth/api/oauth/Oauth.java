@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apized.auth.oauth.OauthProvider;
+import org.apized.core.context.ApizedContext;
 import org.apized.core.model.Apized;
 import org.apized.core.model.BaseModel;
 
@@ -51,6 +52,14 @@ public class Oauth extends BaseModel {
 
   @NotNull
   private String clientSecret;
+
+  public String getClientSecret() {
+    if (ApizedContext.getSecurity().getUser().isAllowed("auth.oauth")) {
+      return clientSecret;
+    } else {
+      return null;
+    }
+  }
 
   @JsonIgnore
   @Transient
