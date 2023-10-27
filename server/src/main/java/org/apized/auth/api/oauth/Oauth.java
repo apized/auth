@@ -5,10 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.micronaut.serde.annotation.Serdeable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -52,14 +49,6 @@ public class Oauth extends BaseModel {
 
   @NotNull
   private String clientSecret;
-
-  public String getClientSecret() {
-    if (ApizedContext.getSecurity().getUser().isAllowed("auth.oauth")) {
-      return clientSecret;
-    } else {
-      return null;
-    }
-  }
 
   @JsonIgnore
   @Transient
