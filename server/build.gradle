@@ -31,7 +31,7 @@ dockerfile {
 }
 
 dockerfileNative {
-//  setGraalImage("ghcr.io/graalvm/native-image-community:21-muslib-ol8")
+  setGraalImage("ghcr.io/graalvm/native-image-community:21")
   baseImage('alpine:3.17')
   runCommand('apk add gcompat libstdc++')
 }
