@@ -26,12 +26,12 @@ dockerBuildNative {
 }
 
 dockerfile {
-  baseImage("openjdk:21-slim")
-  args('-Xms256m', '-Xmx512m')
+  baseImage("alpine:20230901")
+  runCommand('apk --no-cache add openjdk21')
 }
 
 dockerfileNative {
-  setGraalImage("ghcr.io/graalvm/native-image-community:21-muslib-ol8")
+//  setGraalImage("ghcr.io/graalvm/native-image-community:21-muslib-ol8")
   baseImage('alpine:3.17')
   runCommand('apk add gcompat libstdc++')
 }
