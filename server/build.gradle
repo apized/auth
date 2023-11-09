@@ -26,8 +26,8 @@ dockerBuildNative {
 }
 
 dockerfile {
-  baseImage("alpine:3.17")
-  runCommand('apk --no-cache add openjdk17')
+  baseImage("openjdk:21-slim")
+  args('-Xms256m', '-Xmx512m')
 }
 
 dockerfileNative {
