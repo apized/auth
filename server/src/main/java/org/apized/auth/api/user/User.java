@@ -5,16 +5,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.micronaut.data.annotation.TypeDef;
 import io.micronaut.data.model.DataType;
 import io.micronaut.serde.annotation.Serdeable;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apized.auth.api.role.Role;
+import org.apized.core.event.annotation.EventField;
+import org.apized.core.event.annotation.EventIgnore;
 import org.apized.core.model.Action;
 import org.apized.core.model.Apized;
 import org.apized.core.model.BaseModel;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +54,7 @@ public class User extends BaseModel {
   /**
    * Write-only property to set this user's password.
    */
+  @EventIgnore
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   protected String password;
 
@@ -70,11 +78,14 @@ public class User extends BaseModel {
     joinColumns = @JoinColumn(name = "users_id"),
     inverseJoinColumns = @JoinColumn(name = "roles_id")
   )
+  @EventField({"id", "name"})
   protected List<Role> roles = new ArrayList<>();
 
+  @EventField
   @JsonIgnore
   String emailVerificationCode;
 
+  @EventField
   @JsonIgnore
   String passwordResetCode;
 }
