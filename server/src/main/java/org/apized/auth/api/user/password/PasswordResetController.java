@@ -6,8 +6,7 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.inject.Inject;
-import org.apized.auth.EmailService;
-import org.apized.auth.SendgridEmailService;
+import jakarta.transaction.Transactional;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserRepository;
 import org.apized.auth.security.BCrypt;
@@ -16,22 +15,14 @@ import org.apized.core.error.exception.BadRequestException;
 import org.apized.core.error.exception.NotFoundException;
 import org.apized.core.error.exception.UnauthorizedException;
 
-import jakarta.transaction.Transactional;
 import java.util.Map;
 
 @Introspected
 @Transactional
 @Controller("/users/{username}/password")
 public class PasswordResetController {
-
-  @Value("${sendgrid.templates.password-reset}")
-  private String templateId;
-
   @Inject
   UserRepository userRepository;
-
-  @Inject
-  EmailService emailService;
 
   @Operation(operationId = "Reset password confirmation", summary = "Reset password confirmation", tags = {"User"}, description = """
       
@@ -63,9 +54,6 @@ public class PasswordResetController {
       user.setPasswordResetCode(CodeGenerator.generateCode());
       user._getModelMetadata().getTouched().add("passwordResetCode");
       userRepository.update(user);
-      emailService.send(templateId, user.getName(), user.getUsername(), Map.of(
-        "code", user.getPasswordResetCode()
-      ));
     } catch (Throwable t) {
       //Do nothing. We don't want to expose a way for checking for valid usernames
     }

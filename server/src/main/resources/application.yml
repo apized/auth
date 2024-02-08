@@ -105,9 +105,8 @@ auth:
     domain: ${AUTH_TOKEN_DOMAIN:apized.org}
     secure: ${AUTH_TOKEN_SECURE:true}
 
-sendgrid:
-  api-key: ${SENDGRID_API_KEY:}
-  from: ${SENDGRID_API_FROM:}
-  templates:
-    user-verification: ${SENDGRID_USER_VERIFICATION_TEMPLATE:}
-    password-reset: ${SENDGRID_PASSWORD_RESET_TEMPLATE:}
+rabbitmq:
+  exchange: ${RABBITMQ_EXCHANGE:apized}
+  uri: ${RABBITMQ_URI:`amqp://localhost`}
+  username: ${RABBITMQ_USERNAME:guest}
+  password: ${RABBITMQ_PASSWORD:guest}
