@@ -1,6 +1,5 @@
 package org.apized.auth.api.user.password;
 
-import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
@@ -14,8 +13,6 @@ import org.apized.auth.security.CodeGenerator;
 import org.apized.core.error.exception.BadRequestException;
 import org.apized.core.error.exception.NotFoundException;
 import org.apized.core.error.exception.UnauthorizedException;
-
-import java.util.Map;
 
 @Introspected
 @Transactional

@@ -81,11 +81,7 @@ public class User extends BaseModel {
   @EventField({"id", "name"})
   protected List<Role> roles = new ArrayList<>();
 
-  @EventField
-  @JsonIgnore
   String emailVerificationCode;
 
-  @EventField
-  @JsonIgnore
   String passwordResetCode;
 }

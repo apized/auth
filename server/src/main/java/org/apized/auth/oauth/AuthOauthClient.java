@@ -100,7 +100,7 @@ public class AuthOauthClient implements OauthClient {
       List<String> emailPath = oauth.getMapping() != null && oauth.getMapping().get("email") != null ? List.of(oauth.getMapping().get("email").split(" ")) : List.of("email");
 
       String name = namePath.stream().map(path -> fetchPathInObject(path, userResponse)).collect(Collectors.joining(" "));
-      String email = emailPath.stream().map(path -> fetchPathInObject(path, emailResponse)).collect(Collectors.joining(" "));
+      String email = emailPath.stream().map(path -> fetchPathInObject(path, emailResponse)).collect(Collectors.joining(" ")).toLowerCase();
 
       return userService.findByUsername(email).orElseGet(() -> {
         User newUser = new User();

@@ -42,9 +42,5 @@ public class DefaultPermissionsAndRoleOnCreationBehaviour extends AbstractApiBeh
     if (!ApizedContext.getSecurity().getUser().isAllowed("auth")) {
       input.setVerified(false);
     }
-
-    if (!input.isVerified()) {
-      input.setEmailVerificationCode(CodeGenerator.generateCode());
-    }
   }
 }

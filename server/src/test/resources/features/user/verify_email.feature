@@ -9,12 +9,12 @@ Feature: Verify email
 
   Scenario: Admin can verify users email
     Given I login as admin
-    When I verify user test with code ${code}
+    When I verify user test@apized.org with code ${code}
     Then the request succeeds
 
   Scenario: Admin cannot verify users email with an invalid code
     Given I login as admin
-    When I verify user test with code 123
+    When I verify user test@apized.org with code 123
     Then the request fails
     And the response path "errors" contains element with
       | message | Not authorized |
@@ -28,12 +28,12 @@ Feature: Verify email
 
   Scenario: Anonymous can verify email
     Given I login as anonymous
-    When I verify user test with code ${code}
+    When I verify user test@apized.org with code ${code}
     Then the request succeeds
 
   Scenario: Anonymous cannot verify their email with an invalid code
     Given I login as anonymous
-    When I verify user test with code 123
+    When I verify user test@apized.org with code 123
     Then the request fails
     And the response path "errors" contains element with
       | message | Not authorized |

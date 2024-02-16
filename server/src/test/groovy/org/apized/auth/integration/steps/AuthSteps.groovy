@@ -169,11 +169,10 @@ class AuthSteps extends AbstractSteps {
   }
 
   @When('^I verify user ([^\\s]+) with code ([^\\s]+)$')
-  void verifyUser(String user, String code) {
-    String userId = testRunner.getUserId(user)
+  void verifyUser(String username, String code) {
     Response response = testRunner.getClient(context)
       .body(JsonOutput.toJson([ code: context.eval(code) ]))
-      .post(context.eval("/users/$userId/verification").toString())
+      .post(context.eval("/users/$username/verification").toString())
     context.addResponse('code', (response.statusCode() / 100 as int) == 2, response.asString(), null)
   }
 
