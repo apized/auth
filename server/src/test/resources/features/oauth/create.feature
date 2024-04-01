@@ -64,26 +64,26 @@ Feature: Oauth configuration creation
     And the response path "<path>" contains
       | <field> | <value> |
     Examples:
-      | name     | slug                    | provider | clientId | clientSecret | result   | path     | field        | value                                                                                |
+      | name     | slug                    | provider | clientId | clientSecret | result   | path     | field        | value                                                      |
       #name
-      |          | test                    | Google   | client   | secret       | fails    | errors.0 | message      | must not be null                                                                     |
-      | T        | test                    | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 2147483647                                                |
-      | Te       | test                    | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 2147483647                                                |
-      | Tes      | test                    | Google   | client   | secret       | succeeds | _        | name         | Tes                                                                                  |
+      |          | test                    | Google   | client   | secret       | fails    | errors.0 | message      | must not be null                                           |
+      | T        | test                    | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 2147483647                      |
+      | Te       | test                    | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 2147483647                      |
+      | Tes      | test                    | Google   | client   | secret       | succeeds | _        | name         | Tes                                                        |
       #slug
-      | TestAuth |                         | Google   | client   | secret       | fails    | errors.0 | message      | must not be null                                                                     |
-      | TestAuth | t                       | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 15                                                        |
-      | TestAuth | te                      | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 15                                                        |
-      | TestAuth | tes                     | Google   | client   | secret       | succeeds | _        | slug         | tes                                                                                  |
-      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | slug         | test                                                                                 |
-      | TestAuth | test-123456789123456789 | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 15                                                        |
+      | TestAuth |                         | Google   | client   | secret       | fails    | errors.0 | message      | must not be null                                           |
+      | TestAuth | t                       | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 15                              |
+      | TestAuth | te                      | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 15                              |
+      | TestAuth | tes                     | Google   | client   | secret       | succeeds | _        | slug         | tes                                                        |
+      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | slug         | test                                                       |
+      | TestAuth | test-123456789123456789 | Google   | client   | secret       | fails    | errors.0 | message      | size must be between 3 and 15                              |
       #provider
-      | TestAuth | test                    |          | client   | secret       | fails    | errors.0 | message      | must not be null                                                                     |
-      | TestAuth | test                    | Fruit    | client   | secret       | fails    | errors.0 | message      | IllegalArgumentException: No enum constant org.apized.auth.oauth.OauthProvider.Fruit |
-      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | provider     | Google                                                                               |
+      | TestAuth | test                    |          | client   | secret       | fails    | errors.0 | message      | must not be null                                           |
+      | TestAuth | test                    | Fruit    | client   | secret       | fails    | errors.0 | message      | No enum constant org.apized.auth.oauth.OauthProvider.Fruit |
+      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | provider     | Google                                                     |
       #clientId
-      | TestAuth | test                    | Google   |          | secret       | fails    | errors.0 | message      | must not be null                                                                     |
-      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | clientId     | client                                                                               |
+      | TestAuth | test                    | Google   |          | secret       | fails    | errors.0 | message      | must not be null                                           |
+      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | clientId     | client                                                     |
       #clientSecret
-      | TestAuth | test                    | Google   | client   |              | fails    | errors.0 | message      | must not be null                                                                     |
-      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | clientSecret | secret                                                                               |
+      | TestAuth | test                    | Google   | client   |              | fails    | errors.0 | message      | must not be null                                           |
+      | TestAuth | test                    | Google   | client   | secret       | succeeds | _        | clientSecret | secret                                                     |
