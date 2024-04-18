@@ -10,6 +10,29 @@ micronaut:
         all:
           allowed-origins-regex: '^https?:\/\/.*$'
 
+  metrics:
+    enabled: true
+    binders:
+      web:
+        server:
+          enabled: true
+          percentiles: "0.50,0.90,0.95,0.99"
+          histogram: true
+        client:
+          enabled: true
+          percentiles: "0.50,0.90,0.95,0.99"
+          histogram: true
+      files:
+        enabled: false
+      logback:
+        enabled: false
+
+    export:
+      prometheus:
+        enabled: true
+        step: PT1M
+        descriptions: true
+
   otel:
     enabled: ${OTEL_ENABLED:false}
 
@@ -45,6 +68,8 @@ endpoints:
     enabled: false
   refresh:
     enabled: false
+  prometheus:
+    sensitive: false
 
 flyway:
   datasources:
@@ -91,9 +116,15 @@ otel:
     - /health.*
     - /sample/.*
     - /swagger.*
+    - /prometheus
 
 apized:
   slug: auth
+  exclusions:
+    - /
+    - /health.*
+    - /swagger.*
+    - /prometheus
 
 auth:
   frontendUrl: ${AUTH_FRONTEND_URL:https://auth-web.apized.org}
