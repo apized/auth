@@ -10,10 +10,6 @@ java {
   withSourcesJar()
 }
 
-dependencies {
-  compileOnly "io.opentelemetry:opentelemetry-exporter-otlp"
-}
-
 publishing {
   repositories {
     maven {

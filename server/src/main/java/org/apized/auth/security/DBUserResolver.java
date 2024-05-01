@@ -66,7 +66,7 @@ public class DBUserResolver implements UserResolver {
   @Override
   public org.apized.core.security.model.User getUser(String token) {
     Optional<User> user = userRepository.get(
-      token != null
+      token != null && !token.isBlank()
         ? UUID.fromString(verifier.verify(token).getSubject())
         : UUID.randomUUID()
     );
