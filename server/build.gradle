@@ -6,12 +6,11 @@ plugins {
 dependencies {
   annotationProcessor 'io.micronaut.openapi:micronaut-openapi'
 
+  implementation "org.apized:micronaut-metrics:$apizedVersion"
   implementation "org.apized:micronaut-tracing:$apizedVersion"
   implementation "org.apized:micronaut-messaging-rabbitmq:$apizedVersion"
 
   implementation 'com.auth0:java-jwt:4.3.0'
-
-  implementation 'io.micronaut.micrometer:micronaut-micrometer-registry-prometheus'
 }
 
 application {

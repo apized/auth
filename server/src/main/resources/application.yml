@@ -17,11 +17,13 @@ micronaut:
         server:
           enabled: true
           percentiles: "0.50,0.90,0.95,0.99"
-          histogram: true
+          histogram:
+            enabled: true
         client:
           enabled: true
           percentiles: "0.50,0.90,0.95,0.99"
-          histogram: true
+          histogram:
+            enabled: true
       files:
         enabled: false
       logback:
