@@ -74,3 +74,11 @@ Feature: Redeem token
     Then the request fails
     And the response path "errors" contains element with
       | message | /TokenExpiredException: The Token has expired on .*/ |
+
+  Scenario: Dummy/garbage token returns anonymous
+    Given There is a token for user user as token valid for 10 seconds
+    And I login as administrator
+    When I renew the token 9ea00145-ade1-4b2f-b159-be3dc184ca1e
+    Then the request succeeds
+    And the response contains
+      | jwt | /.*/ |

@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Value;
@@ -73,7 +74,7 @@ public class DBUserResolver implements UserResolver {
           ? UUID.fromString(verifier.verify(token).getSubject())
           : UUID.randomUUID()
       );
-    } catch (Exception e) {
+    } catch (JWTDecodeException e) {
       user = Optional.empty();
     }
 
