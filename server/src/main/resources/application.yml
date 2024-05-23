@@ -18,10 +18,12 @@ micronaut:
           enabled: true
           histogram:
             enabled: true
+            slas: 0.1,0.2,0.4,0.5,1.0,1.5,2,5,10,20,30
         client:
           enabled: true
           histogram:
             enabled: true
+            slas: 0.1,0.2,0.4,0.5,1.0,1.5,2,5,10,20,30
       files:
         enabled: false
       logback:
