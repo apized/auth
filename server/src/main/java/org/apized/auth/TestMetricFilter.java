@@ -6,19 +6,20 @@ import io.micronaut.configuration.metrics.annotation.RequiresMetrics;
 import io.micronaut.configuration.metrics.binder.web.WebMetricsPublisher;
 import io.micronaut.configuration.metrics.binder.web.WebMetricsServerCondition;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.core.async.publisher.Publishers;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.*;
 import io.micronaut.http.annotation.Filter;
-import io.micronaut.http.filter.ServerFilterChain;
+import io.micronaut.http.annotation.ResponseFilter;
+import io.micronaut.http.annotation.ServerFilter;
 import io.micronaut.http.filter.ServerFilterPhase;
 import io.micronaut.http.uri.UriMatchTemplate;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.serde.ObjectMapper;
 import io.micronaut.web.router.UriRouteInfo;
 import io.micronaut.web.router.UriRouteMatch;
 import jakarta.inject.Inject;
-import org.apized.micronaut.core.ApizedHttpServerFilter;
-import org.reactivestreams.Publisher;
+import org.apized.micronaut.core.ApizedServerFilter;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -39,11 +40,11 @@ import static io.micronaut.http.HttpStatus.OK;
  * @author graemerocher
  * @since 1.0
  */
-@Filter({"/**"})
+@ServerFilter(Filter.MATCH_ALL_PATTERN)
 @RequiresMetrics
 @Requires(property = WebMetricsPublisher.ENABLED, notEquals = FALSE)
 @Requires(condition = WebMetricsServerCondition.class)
-public class TestMetricFilter extends ApizedHttpServerFilter {
+public class TestMetricFilter extends ApizedServerFilter {
   @Inject
   ObjectMapper mapper;
 
@@ -61,30 +62,32 @@ public class TestMetricFilter extends ApizedHttpServerFilter {
       .orElse(UNMATCHED_URI));
   }
 
-  @Override
-  public Publisher<MutableHttpResponse<?>> filter(HttpRequest<?> request, ServerFilterChain chain) {
-    return Publishers.then(chain.proceed(request), response -> {
-      try {
-        long bytes = response.getBody().isPresent() ? Optional.of(this.mapper.writeValueAsBytes(response.getBody().get()).length).orElse(0) : 0L;
-        String httpMethod = request.getMethodName();
-        String requestPath = resolvePath(request);
-        String serviceId = resolveServiceID(request);
-        meterRegistry.summary(
-          "http.server.requests.bytes",
-          Stream.of(
-              httpMethod == null ? null : Tag.of(METHOD, httpMethod),
-              status(response),
-              uri(response, requestPath),
-              serviceId == null ? null : Tag.of(SERVICE_ID, serviceId)
-            )
-            .filter(Objects::nonNull)
-            .toList()
-        ).record(bytes);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    });
+  @ResponseFilter
+  @ExecuteOn(TaskExecutors.BLOCKING)
+  public void responseFilter(HttpRequest<?> request, MutableHttpResponse<?> response) {
+    if (shouldExclude(request.getPath())) return;
+
+    try {
+      long bytes = response.getBody().isPresent() ? Optional.of(this.mapper.writeValueAsBytes(response.getBody().get()).length).orElse(0) : 0L;
+      String httpMethod = request.getMethodName();
+      String requestPath = resolvePath(request);
+      String serviceId = resolveServiceID(request);
+      meterRegistry.summary(
+        "http.server.requests.bytes",
+        Stream.of(
+            httpMethod == null ? null : Tag.of(METHOD, httpMethod),
+            status(response),
+            uri(response, requestPath),
+            serviceId == null ? null : Tag.of(SERVICE_ID, serviceId)
+          )
+          .filter(Objects::nonNull)
+          .toList()
+      ).record(bytes);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
+
 
   static final String UNKNOWN = "UNKNOWN";
   private static final Tag URI_NOT_FOUND = Tag.of("uri", "NOT_FOUND");

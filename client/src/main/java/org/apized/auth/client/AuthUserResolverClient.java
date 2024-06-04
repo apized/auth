@@ -25,7 +25,7 @@ public interface AuthUserResolverClient {
   );
 
   @Get("/auth/users/{userId}/token?expiring={expiring}")
-  Map<String,String> generateToken(
+  Map<String, String> generateToken(
     @Header(name = "Authorization") String authorization,
     @PathVariable("userId") @NotNull UUID userId,
     @PathVariable("expiring") @NotNull boolean expiring
