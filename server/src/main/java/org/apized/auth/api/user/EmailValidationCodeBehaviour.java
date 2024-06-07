@@ -2,7 +2,7 @@ package org.apized.auth.api.user;
 
 import jakarta.inject.Singleton;
 import org.apized.auth.security.CodeGenerator;
-import org.apized.core.behaviour.AbstractApiBehaviourHandler;
+import org.apized.core.behaviour.BehaviourHandler;
 import org.apized.core.behaviour.annotation.Behaviour;
 import org.apized.core.execution.Execution;
 import org.apized.core.model.Action;
@@ -18,7 +18,7 @@ import java.util.UUID;
   actions = {Action.CREATE, Action.UPDATE}
 )
 @Singleton
-public class EmailValidationCodeBehaviour extends AbstractApiBehaviourHandler<User> {
+public class EmailValidationCodeBehaviour implements BehaviourHandler<User> {
   @Override
   public void preCreate(Execution execution, User input) {
     generateEmailValidationCode(input);

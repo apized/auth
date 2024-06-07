@@ -2,9 +2,8 @@ package org.apized.auth.api.user;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import org.apized.auth.security.CodeGenerator;
 import org.apized.auth.security.DBUserResolver;
-import org.apized.core.behaviour.AbstractApiBehaviourHandler;
+import org.apized.core.behaviour.BehaviourHandler;
 import org.apized.core.behaviour.annotation.Behaviour;
 import org.apized.core.context.ApizedContext;
 import org.apized.core.execution.Execution;
@@ -22,7 +21,7 @@ import java.util.UUID;
   actions = Action.CREATE
 )
 @Singleton
-public class DefaultPermissionsAndRoleOnCreationBehaviour extends AbstractApiBehaviourHandler<User> {
+public class DefaultPermissionsAndRoleOnCreationBehaviour implements BehaviourHandler<User> {
   @Inject
   DBUserResolver resolver;
 

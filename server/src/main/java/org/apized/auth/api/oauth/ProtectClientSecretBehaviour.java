@@ -1,7 +1,7 @@
 package org.apized.auth.api.oauth;
 
 import jakarta.inject.Singleton;
-import org.apized.core.behaviour.AbstractApiBehaviourHandler;
+import org.apized.core.behaviour.BehaviourHandler;
 import org.apized.core.behaviour.annotation.Behaviour;
 import org.apized.core.context.ApizedContext;
 import org.apized.core.execution.Execution;
@@ -19,7 +19,7 @@ import java.util.UUID;
   layer = Layer.CONTROLLER
 )
 @Singleton
-public class ProtectClientSecretBehaviour extends AbstractApiBehaviourHandler<Oauth> {
+public class ProtectClientSecretBehaviour implements BehaviourHandler<Oauth> {
   @Override
   public void postList(Execution execution, Page<Oauth> output) {
     if (!ApizedContext.getSecurity().getUser().isAllowed("auth.oauth")) {

@@ -4,7 +4,7 @@ import jakarta.annotation.PostConstruct
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.apized.auth.api.user.User
-import org.apized.core.behaviour.AbstractApiBehaviourHandler
+import org.apized.core.behaviour.BehaviourHandler
 import org.apized.core.behaviour.BehaviourManager
 import org.apized.core.execution.Execution
 import org.apized.core.model.Action
@@ -12,7 +12,7 @@ import org.apized.core.model.Layer
 import org.apized.core.model.When
 
 @Singleton
-class RegisterCreatedUsersOnMockBehaviour extends AbstractApiBehaviourHandler<User> {
+class RegisterCreatedUsersOnMockBehaviour implements BehaviourHandler<User> {
 
   @Inject
   BehaviourManager manager

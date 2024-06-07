@@ -2,16 +2,15 @@ package org.apized.auth.api.role;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import jakarta.transaction.Transactional;
 import org.apized.auth.api.user.UserRepository;
-import org.apized.core.behaviour.AbstractApiBehaviourHandler;
+import org.apized.core.behaviour.BehaviourHandler;
 import org.apized.core.behaviour.annotation.Behaviour;
 import org.apized.core.execution.Execution;
 import org.apized.core.model.Action;
 import org.apized.core.model.Layer;
 import org.apized.core.model.When;
 
-import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.UUID;
 
 @Singleton
@@ -21,7 +20,7 @@ import java.util.UUID;
   layer = Layer.SERVICE,
   actions = Action.DELETE
 )
-public class ClearUsersOnDeleteBehaviour extends AbstractApiBehaviourHandler<Role> {
+public class ClearUsersOnDeleteBehaviour implements BehaviourHandler<Role> {
   @Inject
   RoleRepository roleRepository;
 

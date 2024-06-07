@@ -2,7 +2,7 @@ package org.apized.auth.api.user;
 
 import jakarta.inject.Singleton;
 import org.apized.auth.security.BCrypt;
-import org.apized.core.behaviour.AbstractApiBehaviourHandler;
+import org.apized.core.behaviour.BehaviourHandler;
 import org.apized.core.behaviour.annotation.Behaviour;
 import org.apized.core.error.exception.BadRequestException;
 import org.apized.core.execution.Execution;
@@ -19,7 +19,7 @@ import java.util.UUID;
   layer = Layer.SERVICE
 )
 @Singleton
-public class EncryptNewPasswordBehaviour extends AbstractApiBehaviourHandler<User> {
+public class EncryptNewPasswordBehaviour implements BehaviourHandler<User> {
   @Override
   public void preCreate(Execution execution, User input) {
     encryptPassword(input);
