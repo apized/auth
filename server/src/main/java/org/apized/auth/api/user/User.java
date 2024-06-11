@@ -5,10 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.micronaut.data.annotation.TypeDef;
 import io.micronaut.data.model.DataType;
 import io.micronaut.serde.annotation.Serdeable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -72,7 +69,7 @@ public class User extends BaseModel {
   /**
    * List of roles associated with this user. Permissions of these roles will apply to this user.
    */
-  @ManyToMany
+  @ManyToMany(cascade = CascadeType.PERSIST)
   @JoinTable(
     name = "users_roles",
     joinColumns = @JoinColumn(name = "users_id"),
