@@ -7,6 +7,8 @@ import org.apized.core.event.ESBAdapter
 import org.apized.micronaut.messaging.rabbitmq.RabbitMQESBAdapter
 import org.apized.test.integration.service.AbstractServiceIntegrationMock
 
+import java.time.LocalDateTime
+
 @Singleton
 @Replaces(RabbitMQESBAdapter.class)
 class ESBAdapterMock extends AbstractServiceIntegrationMock implements ESBAdapter {
@@ -20,7 +22,7 @@ class ESBAdapterMock extends AbstractServiceIntegrationMock implements ESBAdapte
   }
 
   @Override
-  void send(UUID messageId, Date timestamp, String topic, Map<String, Object> headers, Object payload) {
+  void send(UUID messageId, LocalDateTime timestamp, String topic, Map<String, Object> headers, Object payload) {
     execute(
       'send',
       [
