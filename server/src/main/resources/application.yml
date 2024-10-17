@@ -8,7 +8,7 @@ micronaut:
       enabled: true
       configurations:
         all:
-          allowed-origins-regex: '^https?:\/\/.*$'
+          allowed-origins-regex: ${ALLOWED_ORIGINS:`^https?:\/\/.*$`}
 
   metrics:
     enabled: true

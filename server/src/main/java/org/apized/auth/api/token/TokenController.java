@@ -3,6 +3,7 @@ package org.apized.auth.api.token;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.*;
@@ -58,6 +59,9 @@ public class TokenController {
   @Value("${auth.backendUrl}")
   String backendUrl;
 
+  @Value("${auth.frontendUrl}")
+  String frontendUrl;
+
   @Value("${auth.cookie.domain}")
   String cookieDomain;
 
@@ -70,7 +74,7 @@ public class TokenController {
   @Post
   @Operation(
     operationId = "Login",
-    tags = {"Token"},
+    tags = { "Token" },
     summary = "Login with username/password",
     description = """
          Login with a username/password pair
@@ -96,71 +100,47 @@ public class TokenController {
   @Get("/oauth/{slug}")
   @Operation(
     operationId = "Oauth login",
-    tags = {"Token"},
+    tags = { "Token" },
     summary = "Login with oauth",
     description = """
          Login with a oauth pair
       """)
-  public HttpResponse<?> socialLogin(
+  public HttpResponse<String> socialLogin(
     @PathVariable("slug") String slug,
-    @QueryValue("code") String code,
-    @QueryValue(value = "redirect") String redirect
+    @QueryValue("code") String code
   ) {
-    Oauth oauth = oauthService.findBySlug(slug).orElseThrow(() -> new BadRequestException("No such oauth " + slug));
-    User user = oauthClient.getUser(oauth, code, new HashMap<>(), redirect.replaceAll("(?<!:)[/]{2,}", "/"));
-    if (user != null) {
-      if (!user.isVerified()) {
-        user.setVerified(true);
-        user.setEmailVerificationCode(null);
-        userService.update(user.getId(), user);
-      }
-      return getHttpResponse(AuthConverter.convertAuthUserToApizedUser(user))
-        .contentType(MediaType.TEXT_HTML_TYPE)
-        .body("<html><head></head><body><script>debugger;window.close();window.history.back();</script></body></html>");
-    } else {
-      throw new BadRequestException("No user found");
-    }
+    return oauthLogin(
+      slug,
+      code,
+      new HashMap<>()
+    );
   }
 
   @SneakyThrows
   @SuppressWarnings("unchecked")
-  @Post(value = "/oauth/{slug}", consumes = {"application/json", "application/x-www-form-urlencoded"})
+  @Post(value = "/oauth/{slug}", consumes = { "application/json", "application/x-www-form-urlencoded" })
   @Operation(
     operationId = "Oauth login",
-    tags = {"Token"},
+    tags = { "Token" },
     summary = "Login with oauth",
     description = """
          Login with a oauth pair
       """)
-  public HttpResponse<?> socialLogin(
+  public HttpResponse<String> socialLogin(
     @PathVariable("slug") String slug,
     @Body Map<String, String> payload
   ) {
-    Oauth oauth = oauthService.findBySlug(slug).orElseThrow(() -> new BadRequestException("No such oauth " + slug));
-    User user = oauthClient.getUser(
-      oauth,
+    return oauthLogin(
+      slug,
       payload.get("code"),
-      mapper.readValue(payload.getOrDefault("user", "{ \"name\": { \"firstName\": \"Unknown\", \"lastName\": \"User\" } }"), Map.class),
-      String.format("%s/tokens/oauth/apple", backendUrl)
+      mapper.readValue(payload.getOrDefault("user", "{ \"name\": { \"firstName\": \"Unknown\", \"lastName\": \"User\" } }"), Map.class)
     );
-    if (user != null) {
-      if (!user.isVerified()) {
-        user.setVerified(true);
-        user.setEmailVerificationCode(null);
-        userService.update(user.getId(), user);
-      }
-      return getHttpResponse(AuthConverter.convertAuthUserToApizedUser(user))
-        .contentType(MediaType.TEXT_HTML_TYPE)
-        .body("<html><head></head><body><script>debugger;window.close();window.history.back();</script></body></html>");
-    } else {
-      throw new BadRequestException("No user found");
-    }
   }
 
   @Delete
   @Operation(
     operationId = "Logout",
-    tags = {"Token"},
+    tags = { "Token" },
     summary = "Logout",
     description = """
          Logout
@@ -183,7 +163,7 @@ public class TokenController {
   @Post("/{userId}")
   @Operation(
     operationId = "Create",
-    tags = {"Token"},
+    tags = { "Token" },
     summary = "Create token for user",
     security = @SecurityRequirement(name = "bearerAuth"),
     description = """
@@ -206,7 +186,7 @@ public class TokenController {
   @Get("/")
   @Operation(
     operationId = "Redeem self token",
-    tags = {"Token"},
+    tags = { "Token" },
     summary = "Redeem self token",
     security = @SecurityRequirement(name = "bearerAuth"),
     description = """
@@ -218,7 +198,7 @@ public class TokenController {
   @Get("/{jwt}")
   @Operation(
     operationId = "Redeem a token",
-    tags = {"Token"},
+    tags = { "Token" },
     summary = "Redeem a token",
     security = @SecurityRequirement(name = "bearerAuth"),
     description = """
@@ -234,7 +214,7 @@ public class TokenController {
   @Put("/{jwt}")
   @Operation(
     operationId = "Renew",
-    tags = {"Token"},
+    tags = { "Token" },
     summary = "Renew a token",
     security = @SecurityRequirement(name = "bearerAuth"),
     description = """
@@ -248,6 +228,26 @@ public class TokenController {
       throw new ForbiddenException("Not allowed to renew tokens for other users", "auth.token.renew");
     }
     return getHttpResponse(user);
+  }
+
+  private MutableHttpResponse<String> oauthLogin(String slug, String code, Map<String, Object> props) {
+    MutableHttpResponse<?> response;
+
+    Oauth oauth = oauthService.findBySlug(slug).orElseThrow(() -> new BadRequestException("No such oauth " + slug));
+    User user = oauthClient.getUser(oauth, code, props, String.format("%s/tokens/oauth/%s", backendUrl, slug));
+
+    if (user != null) {
+      if (!user.isVerified()) {
+        user.setVerified(true);
+        user.setEmailVerificationCode(null);
+        userService.update(user.getId(), user);
+      }
+      response = getHttpResponse(AuthConverter.convertAuthUserToApizedUser(user));
+    } else {
+      response = HttpResponse.status(HttpStatus.BAD_REQUEST);
+    }
+    return response.contentType(MediaType.TEXT_HTML_TYPE)
+      .body("<html><head></head><body><script>debugger;window.close();window.back();</script></body></html>");
   }
 
   private MutableHttpResponse<Token> getHttpResponse(org.apized.core.security.model.User user) {
