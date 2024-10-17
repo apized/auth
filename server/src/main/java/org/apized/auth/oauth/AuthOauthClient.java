@@ -133,7 +133,7 @@ public class AuthOauthClient implements OauthClient {
         obj = ((List<Object>) obj).get(Integer.parseInt(it));
       }
     }
-    return obj.toString();
+    return Optional.ofNullable(obj).map(Object::toString).orElse("");
   }
 
   private String[] headersFor(Map<String, String> headers, Map<String, Object> props) {

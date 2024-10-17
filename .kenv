@@ -1,0 +1,16 @@
+#!/bin/bash
+export NAMESPACE="auth"
+export SERVICE="auth-server"
+export DATABASE="auth"
+export PACKAGE_MANAGER="apk"
+export PACKAGE_MANAGER_INSTALL_COMMAND="add"
+export PG_USER="sysops"
+export PG_DB="auth"
+export ENV="$1"
+export PGHOST="localhost"
+export PGUSER="postgres"
+export PGPASSWORD="postgres"
+if [ "$1" = "kubernetes-admin@scroogek8s" ]; then
+  export PG_PASSWORD="f0Hp12)/MbBJrRH(2a"
+  export PG_HOST="auth-postgresql"
+fi
