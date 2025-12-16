@@ -10,7 +10,7 @@ export ENV="$1"
 export PGHOST="localhost"
 export PGUSER="postgres"
 export PGPASSWORD="postgres"
-if [ "$1" = "kubernetes-admin@scroogek8s" ]; then
+if [ "$1" = "scrooge" ]; then
   export PG_PASSWORD="f0Hp12)/MbBJrRH(2a"
-  export PG_HOST="auth-postgresql"
+  export PG_HOST="postgres"
 fi

@@ -98,13 +98,13 @@ otel:
     exporter: otlp
   exporter:
     otlp:
-      endpoint: ${OTEL_ENDPOINT:`https://otel.example.com`}
+      endpoint: ${OTEL_ENDPOINT:`http://localhost:4317`}
       headers: ${OTEL_HEADERS:}
       compression: ${OTEL_COMPRESSION:gzip}
       key: ${OTEL_KEY:}
       instance: ${HOSTNAME:local}
     experimental:
-      expoter:
+      exporter:
         otlp:
           retry:
             enabled: true
