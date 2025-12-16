@@ -86,6 +86,7 @@ jobs:
           ./gradlew clean :server:dockerPushNative
         env:
           DOCKER_REGISTRY: ghcr.io
+          ARCH: x86
 
   dockerNativexARM:
     needs: test
@@ -107,3 +108,4 @@ jobs:
           ./gradlew clean :server:dockerPushNative
         env:
           DOCKER_REGISTRY: ghcr.io
+          ARCH: arm

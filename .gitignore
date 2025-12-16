@@ -4,3 +4,5 @@ build/
 target/
 .idea
 .envrc
+*_dump.tar.gz
+*.log
