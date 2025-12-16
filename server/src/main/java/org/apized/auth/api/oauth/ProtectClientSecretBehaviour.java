@@ -21,14 +21,14 @@ import java.util.UUID;
 @Singleton
 public class ProtectClientSecretBehaviour implements BehaviourHandler<Oauth> {
   @Override
-  public void postList(Execution<Oauth> execution, Page<Oauth> output) {
+  public void postList(Execution execution, Page<Oauth> output) {
     if (!ApizedContext.getSecurity().getUser().isAllowed("auth.oauth")) {
       output.getContent().forEach(this::protectClientSecret);
     }
   }
 
   @Override
-  public void postGet(Execution<Oauth> execution, UUID id, Oauth output) {
+  public void postGet(Execution execution, UUID id, Oauth output) {
     if (!ApizedContext.getSecurity().getUser().isAllowed("auth.oauth")) {
       protectClientSecret(output);
     }
