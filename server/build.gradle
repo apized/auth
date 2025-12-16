@@ -19,11 +19,12 @@ application {
 
 
 dockerBuild {
-  images.set(["${System.getenv('DOCKER_REGISTRY') ? "${System.getenv('DOCKER_REGISTRY')}/apized/auth-server" : parent.name}:jvm-${System.getenv("IMAGE_TAG") ?: version}"])
+  images.set(["${System.getenv('DOCKER_REGISTRY') ? "${System.getenv('DOCKER_REGISTRY')}/apized/auth-server" : parent.name}:jvm-${System.getenv("IMAGE_TAG") ?: version}-${System.getenv("ARCH") ?: "x86"}"])
 }
 
 dockerBuildNative {
-  images.set(["${System.getenv('DOCKER_REGISTRY') ? "${System.getenv('DOCKER_REGISTRY')}/apized/auth-server" : parent.name}:${System.getenv("ARCH") ?: "x86"}-${System.getenv("IMAGE_TAG") ?: version}"])
+  images.set(["${System.getenv('DOCKER_REGISTRY') ? "${System.getenv('DOCKER_REGISTRY')}/apized/auth-server" : parent.name}:${System.getenv("IMAGE_TAG") ?: version}-${System.getenv("ARCH") ?: "x86"}"])
+//    "-H:PageSize=65536"
 }
 
 dockerfile {
