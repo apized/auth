@@ -47,98 +47,98 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  dockerx86:
-    needs: test
-#    if: startsWith(github.ref, 'refs/tags')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'adopt'
-      - name: Log in to registry
-        run: echo "${{ secrets.PUBLISH_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-      - name: Publish docker
-        run: |
-          ./gradlew clean :server:dockerPush
-        env:
-          DOCKER_REGISTRY: ghcr.io
-          ARCH: x86
-
-  dockerARM:
-    needs: test
-#    if: startsWith(github.ref, 'refs/tags')
-    runs-on: ubuntu-24.04-arm
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'adopt'
-
-      - name: Log in to registry
-        run: echo "${{ secrets.PUBLISH_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-
-      - name: Publish docker
-        run: |
-          ./gradlew clean :server:dockerPush
-
-        env:
-          DOCKER_REGISTRY: ghcr.io
-          ARCH: arm
-
-  dockerNativex86:
-    needs: test
-#    if: startsWith(github.ref, 'refs/tags')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'adopt'
-      - name: Log in to registry
-        run: echo "${{ secrets.PUBLISH_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-      - name: Publish docker
-        run: |
-          ./gradlew clean :server:dockerPushNative
-        env:
-          DOCKER_REGISTRY: ghcr.io
-          ARCH: x86
-
-  dockerNativexARM:
-    needs: test
-#    if: startsWith(github.ref, 'refs/tags')
-    runs-on: ubuntu-24.04-arm
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'adopt'
-      - name: Log in to registry
-        run: echo "${{ secrets.PUBLISH_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-      - name: Publish docker
-        run: |
-          ./gradlew clean :server:dockerPushNative
-        env:
-          DOCKER_REGISTRY: ghcr.io
-          ARCH: arm
+#
+#  dockerx86:
+#    needs: test
+##    if: startsWith(github.ref, 'refs/tags')
+#    runs-on: ubuntu-latest
+#    permissions:
+#      contents: read
+#      packages: write
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-java@v4
+#        with:
+#          java-version: '21'
+#          distribution: 'adopt'
+#      - name: Log in to registry
+#        run: echo "${{ secrets.PUBLISH_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+#      - name: Publish docker
+#        run: |
+#          ./gradlew clean :server:dockerPush
+#        env:
+#          DOCKER_REGISTRY: ghcr.io
+#          ARCH: x86
+#
+#  dockerARM:
+#    needs: test
+##    if: startsWith(github.ref, 'refs/tags')
+#    runs-on: ubuntu-24.04-arm
+#    permissions:
+#      contents: read
+#      packages: write
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-java@v4
+#        with:
+#          java-version: '21'
+#          distribution: 'adopt'
+#
+#      - name: Log in to registry
+#        run: echo "${{ secrets.PUBLISH_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+#
+#      - name: Publish docker
+#        run: |
+#          ./gradlew clean :server:dockerPush
+#
+#        env:
+#          DOCKER_REGISTRY: ghcr.io
+#          ARCH: arm
+#
+#  dockerNativex86:
+#    needs: test
+##    if: startsWith(github.ref, 'refs/tags')
+#    runs-on: ubuntu-latest
+#    permissions:
+#      contents: read
+#      packages: write
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-java@v4
+#        with:
+#          java-version: '21'
+#          distribution: 'adopt'
+#      - name: Log in to registry
+#        run: echo "${{ secrets.PUBLISH_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+#      - name: Publish docker
+#        run: |
+#          ./gradlew clean :server:dockerPushNative
+#        env:
+#          DOCKER_REGISTRY: ghcr.io
+#          ARCH: x86
+#
+#  dockerNativexARM:
+#    needs: test
+##    if: startsWith(github.ref, 'refs/tags')
+#    runs-on: ubuntu-24.04-arm
+#    permissions:
+#      contents: read
+#      packages: write
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-java@v4
+#        with:
+#          java-version: '21'
+#          distribution: 'adopt'
+#      - name: Log in to registry
+#        run: echo "${{ secrets.PUBLISH_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+#      - name: Publish docker
+#        run: |
+#          ./gradlew clean :server:dockerPushNative
+#        env:
+#          DOCKER_REGISTRY: ghcr.io
+#          ARCH: arm
 
   build:
     needs: test
