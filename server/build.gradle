@@ -19,6 +19,7 @@ application {
 
 
 dockerBuild {
+  platform.set((System.getenv("ARCH") ?: "x86") == "x86" ? "linux/amd64" : "linux/arm64")
   images.set(["${System.getenv('DOCKER_REGISTRY') ? "${System.getenv('DOCKER_REGISTRY')}/apized/auth-server" : parent.name}:jvm-${System.getenv("IMAGE_TAG") ?: version}-${System.getenv("ARCH") ?: "x86"}"])
 }
 
