@@ -189,7 +189,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          file: server/build/docker/main/Dockerfile
+          context: server/build/docker/main
 #          file: server/build/docker/native-main/DockerfileNative
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
