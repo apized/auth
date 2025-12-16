@@ -141,6 +141,7 @@ jobs:
           ARCH: arm
 
   build:
+    needs: test
     strategy:
       fail-fast: false
       matrix:
