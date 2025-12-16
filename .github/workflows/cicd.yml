@@ -140,7 +140,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY_IMAGE }}
           flavor: |
-            suffix=jvm
+            suffix=jvm,onlatest=true
           tags: |
             type=ref,event=branch
             type=ref,event=pr
