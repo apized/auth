@@ -19,24 +19,21 @@ application {
 
 
 dockerBuild {
-  platform.set((System.getenv("ARCH") ?: "x86") == "x86" ? "linux/amd64" : "linux/arm64")
-  images.set(["${System.getenv('DOCKER_REGISTRY') ? "${System.getenv('DOCKER_REGISTRY')}/apized/auth-server" : parent.name}:jvm-${System.getenv("IMAGE_TAG") ?: version}-${System.getenv("ARCH") ?: "x86"}"])
+  images.set(["${System.getenv('DOCKER_REGISTRY') ? "${System.getenv('DOCKER_REGISTRY')}/apized/auth-server" : parent.name}:jvm-${System.getenv("IMAGE_TAG") ?: version}"])
 }
 
 dockerBuildNative {
-  platform.set((System.getenv("ARCH") ?: "x86") == "x86" ? "linux/amd64" : "linux/arm64")
-  images.set(["${System.getenv('DOCKER_REGISTRY') ? "${System.getenv('DOCKER_REGISTRY')}/apized/auth-server" : parent.name}:${System.getenv("IMAGE_TAG") ?: version}-${System.getenv("ARCH") ?: "x86"}"])
-//    "-H:PageSize=65536"
+  images.set(["${System.getenv('DOCKER_REGISTRY') ? "${System.getenv('DOCKER_REGISTRY')}/apized/auth-server" : parent.name}:${System.getenv("IMAGE_TAG") ?: version}"])
 }
 
 dockerfile {
-  baseImage("alpine:20230901")
+  baseImage("alpine:3.23")
   runCommand('apk --no-cache add openjdk21')
 }
 
 dockerfileNative {
   setGraalImage("ghcr.io/graalvm/native-image-community:21")
-  baseImage('alpine:3.17')
+  baseImage('alpine:3.23')
   runCommand('apk add gcompat libstdc++')
 }
 
