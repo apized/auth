@@ -139,10 +139,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY_IMAGE }}
+          flavor: |
+            suffix=jvm
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern=jvm-{{version}}
+            type=semver,pattern={{version}}
 
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
@@ -203,7 +205,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: server/build/docker/native-main
-          file: DockerfileNative
+          file: server/build/docker/native-main/DockerfileNative
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ env.REGISTRY_IMAGE }}
