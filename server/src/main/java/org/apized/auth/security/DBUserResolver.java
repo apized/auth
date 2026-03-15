@@ -16,9 +16,9 @@ import org.apized.auth.api.role.Role;
 import org.apized.auth.api.role.RoleRepository;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserRepository;
+import org.apized.core.micronaut.ApizedStartupEvent;
 import org.apized.core.security.MemoryUserResolver;
 import org.apized.core.security.UserResolver;
-import org.apized.micronaut.server.ApizedStartupEvent;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;

@@ -6,3 +6,4 @@ target/
 .envrc
 *_dump.tar.gz
 *.log
+.mcp.json

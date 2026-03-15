@@ -5,7 +5,7 @@ import io.micronaut.serde.ObjectMapper
 import jakarta.inject.Singleton
 import org.apized.core.event.ESBAdapter
 import org.apized.micronaut.messaging.rabbitmq.RabbitMQESBAdapter
-import org.apized.test.integration.service.AbstractServiceIntegrationMock
+import org.apized.micronaut.test.integration.mocks.AbstractServiceIntegrationMock
 
 import java.time.LocalDateTime
 

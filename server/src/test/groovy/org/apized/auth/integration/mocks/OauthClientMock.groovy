@@ -8,7 +8,7 @@ import org.apized.auth.api.oauth.Oauth
 import org.apized.auth.api.user.User
 import org.apized.auth.oauth.AuthOauthClient
 import org.apized.auth.oauth.OauthClient
-import org.apized.test.integration.service.AbstractServiceIntegrationMock
+import org.apized.micronaut.test.integration.mocks.AbstractServiceIntegrationMock
 
 @Singleton
 @Replaces(AuthOauthClient.class)

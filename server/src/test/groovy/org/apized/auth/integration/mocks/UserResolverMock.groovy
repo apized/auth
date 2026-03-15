@@ -3,7 +3,6 @@ package org.apized.auth.integration.mocks
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.runtime.event.annotation.EventListener
 import jakarta.inject.Singleton
-import org.apized.auth.api.role.RoleService
 import org.apized.auth.api.user.UserRepository
 import org.apized.auth.security.AuthConverter
 import org.apized.auth.security.AuthStartupEvent
@@ -15,12 +14,12 @@ import org.apized.micronaut.test.integration.mocks.AbstractMicronautUserResolver
 @Singleton
 @Replaces(DBUserResolver)
 class UserResolverMock extends AbstractMicronautUserResolverMock {
+  private DBUserResolver dbUserResolver
   private UserRepository userRepository
-  private RoleService roleService
 
-  UserResolverMock(UserRepository userRepository, RoleService roleService) {
+  UserResolverMock(DBUserResolver dbUserResolver, UserRepository userRepository) {
+    this.dbUserResolver = dbUserResolver
     this.userRepository = userRepository
-    this.roleService = roleService
   }
 
   @EventListener
@@ -46,13 +45,13 @@ class UserResolverMock extends AbstractMicronautUserResolverMock {
       }
     }
     Optional.ofNullable(
-      users.get(token)
+      users.get(StringHelper.convertStringToUUID(token))
     ).orElse(
       new User(
         id: token ? UUID.fromString(token) : UUID.randomUUID(),
         name: "Anonymous",
         username: "anonymous@apized.com",
-        roles: [ AuthConverter.convertAuthRoleToApizedRole(roleService.findDefaultRole().get()) ]
+        roles: [ AuthConverter.convertAuthRoleToApizedRole(dbUserResolver.getDefaultRole()) ]
       )
     )
   }
