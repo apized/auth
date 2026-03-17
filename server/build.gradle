@@ -12,6 +12,8 @@ dependencies {
   implementation "org.apized:micronaut-mcp:$apizedVersion"
 
   implementation 'com.auth0:java-jwt:4.3.0'
+  implementation 'com.yubico:webauthn-server-core:2.5.3'
+  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
 }
 
 application {

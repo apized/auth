@@ -143,6 +143,10 @@ auth:
   cookie:
     domain: ${AUTH_TOKEN_DOMAIN:apized.org}
     secure: ${AUTH_TOKEN_SECURE:true}
+  passkey:
+    rp-id: ${AUTH_PASSKEY_RP_ID:localhost}
+    rp-name: ${AUTH_PASSKEY_RP_NAME:Apized}
+    origins: ${AUTH_PASSKEY_ORIGINS:http://localhost:3000}
 
 rabbitmq:
   exchange: ${RABBITMQ_EXCHANGE:apized}

@@ -131,7 +131,9 @@ public class DBUserResolver implements UserResolver {
         role.setPermissions(List.of(
           "auth.user.create",
           "auth.oauth.list",
-          "auth.oauth.get"
+          "auth.oauth.get",
+          "auth.passkey.create",
+          "auth.passkeyChallenge.create"
         ));
         role.getMetadata().put("default", true);
         return Optional.ofNullable(roleRepository.create(role));

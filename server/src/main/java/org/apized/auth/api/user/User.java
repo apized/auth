@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apized.auth.api.passkey.Passkey;
 import org.apized.auth.api.role.Role;
 import org.apized.core.event.annotation.EventField;
 import org.apized.core.event.annotation.EventIgnore;
@@ -77,6 +78,9 @@ public class User extends BaseModel {
   )
   @EventField({"id", "name"})
   protected List<Role> roles = new ArrayList<>();
+
+  @OneToMany(cascade =  CascadeType.REMOVE)
+  protected List<Passkey> passkeys;
 
   String emailVerificationCode;
 
