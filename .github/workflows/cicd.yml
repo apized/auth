@@ -18,6 +18,20 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: auth
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres -d auth"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     permissions:
       contents: read
       packages: write
@@ -29,6 +43,12 @@ jobs:
           distribution: 'adopt'
       - name: Run tests
         run: ./gradlew clean test
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: auth
+          DB_USER: postgres
+          DB_PASS: postgres
 
   publish:
     needs: test
