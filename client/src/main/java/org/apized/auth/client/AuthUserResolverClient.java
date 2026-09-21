@@ -10,7 +10,7 @@ import org.apized.core.security.model.User;
 import java.util.Map;
 import java.util.UUID;
 
-@Client("${apized.federation.auth.base-url}")
+@Client(id = "auth")
 public interface AuthUserResolverClient {
   @Get("/tokens/{token}?fields=*,roles.id,roles.name,roles.permissions")
   User getUser(
