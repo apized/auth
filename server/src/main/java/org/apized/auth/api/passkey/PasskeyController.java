@@ -21,9 +21,6 @@ import org.apized.auth.security.DBUserResolver;
 import org.apized.core.ApizedConfig;
 import org.apized.core.context.ApizedContext;
 import org.apized.core.error.exception.UnauthorizedException;
-import org.apized.core.model.Page;
-import org.apized.core.search.SearchOperation;
-import org.apized.core.search.SearchTerm;
 
 import java.util.List;
 import java.util.Map;
@@ -60,15 +57,8 @@ public class PasskeyController {
 
   @Get
   @Operation(operationId = "ListPasskeys", tags = {"Passkey"}, summary = "List passkeys for the current user", security = @SecurityRequirement(name = "bearerAuth"))
-  public Page<Passkey> list() {
-    List<SearchTerm> search = List.of(
-      SearchTerm.builder()
-        .field("userId")
-        .op(SearchOperation.eq)
-        .value(ApizedContext.getSecurity().getUser().getId())
-        .build()
-    );
-    return passkeyService.list(1, 50, search, List.of());
+  public List<Passkey> list() {
+    return passkeyService.findByUserId(ApizedContext.getSecurity().getUser().getId());
   }
 
   @Delete("/{id}")

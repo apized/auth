@@ -9,7 +9,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import lombok.SneakyThrows;
 import org.apized.auth.api.passkey.challenge.Challenge;
-import org.apized.auth.api.passkey.challenge.ChallengeService;
+import org.apized.auth.api.passkey.challenge.ChallengeConsumer;
 import org.apized.auth.api.passkey.challenge.ChallengeType;
 import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserRepository;
@@ -18,7 +18,6 @@ import org.apized.auth.passkey.PasskeyCredentialService;
 import org.apized.core.behaviour.BehaviourHandler;
 import org.apized.core.behaviour.annotation.Behaviour;
 import org.apized.core.context.ApizedContext;
-import org.apized.core.error.exception.BadRequestException;
 import org.apized.core.error.exception.UnauthorizedException;
 import org.apized.core.execution.Execution;
 import org.apized.core.model.Action;
@@ -40,7 +39,7 @@ public class PasskeyBehaviour implements BehaviourHandler<Passkey> {
   PasskeyConfig config;
 
   @Inject
-  ChallengeService challengeService;
+  ChallengeConsumer challengeConsumer;
 
   @Inject
   PasskeyRepository passkeyRepository;
@@ -53,11 +52,7 @@ public class PasskeyBehaviour implements BehaviourHandler<Passkey> {
   public void preCreate(Execution execution, Passkey input) {
     User user = userRepository.get(ApizedContext.getSecurity().getUser().getId()).get();
 
-    Challenge challenge = challengeService.get(input.getChallengeId());
-
-    if (ChallengeType.REGISTRATION == challenge.getType() || !user.getId().equals(challenge.getUserId())) {
-      throw new BadRequestException("Invalid challenge");
-    }
+    Challenge challenge = challengeConsumer.consume(input.getChallengeId(), ChallengeType.REGISTRATION, user.getId());
 
     PublicKeyCredentialCreationOptions options =
       objectMapper.readValue(challenge.getPayload(), PublicKeyCredentialCreationOptions.class);
@@ -70,8 +65,6 @@ public class PasskeyBehaviour implements BehaviourHandler<Passkey> {
         ))
         .build()
     );
-
-    challengeService.delete(challenge.getId());
 
     input.setUser(user);
     input.setCredentialId(result.getKeyId().getId().getBase64Url());
@@ -93,7 +86,7 @@ public class PasskeyBehaviour implements BehaviourHandler<Passkey> {
 
   @SneakyThrows
   public User finishAuthentication(UUID challengeId, String credentialJson) {
-    Challenge challenge = challengeService.get(challengeId);
+    Challenge challenge = challengeConsumer.consume(challengeId, ChallengeType.AUTHENTICATION, null);
 
     AssertionRequest request = objectMapper.readValue(challenge.getPayload(), AssertionRequest.class);
 
@@ -107,8 +100,6 @@ public class PasskeyBehaviour implements BehaviourHandler<Passkey> {
     if (!result.isSuccess()) {
       throw new UnauthorizedException("Passkey authentication failed");
     }
-
-    challengeService.delete(challengeId);
 
     passkeyRepository.findByCredentialId(result.getCredential().getCredentialId().getBase64Url()).ifPresent(passkey -> {
       passkey.setSignCount(result.getSignatureCount());

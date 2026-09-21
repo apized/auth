@@ -1,0 +1,5 @@
+auth:
+  passkey:
+    rp-id: localhost
+    rp-name: Apized
+    origins: http://localhost:3000

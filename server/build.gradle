@@ -13,7 +13,9 @@ dependencies {
 
   implementation 'com.auth0:java-jwt:4.3.0'
   implementation 'com.yubico:webauthn-server-core:2.5.3'
-  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
+
+  testImplementation platform('org.testcontainers:testcontainers-bom:1.21.3')
+  testImplementation 'com.upokecenter:cbor:4.5.2'
 }
 
 application {
@@ -41,6 +43,8 @@ dockerfileNative {
 }
 
 test {
+  systemProperty 'api.version', '1.40'
+
   if (project.hasProperty('excludeTests')) {
     project.properties['excludeTests']?.replaceAll('\\s', '')?.split('[,;]')?.each {
       exclude "${it}"

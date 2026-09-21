@@ -53,7 +53,8 @@ public class PasskeyCredentialService implements CredentialRepository {
   @Override
   public Optional<RegisteredCredential> lookup(ByteArray credentialId, ByteArray userHandle) {
     return passkeyRepository.findByCredentialId(credentialId.getBase64Url())
-      .map(p -> toRegisteredCredential(p));
+      .filter(p -> p.getUser().getId().equals(byteArrayToUuid(userHandle)))
+      .map(this::toRegisteredCredential);
   }
 
   @Override

@@ -132,8 +132,10 @@ public class DBUserResolver implements UserResolver {
           "auth.user.create",
           "auth.oauth.list",
           "auth.oauth.get",
-          "auth.passkey.create",
-          "auth.passkeyChallenge.create"
+          "auth.challenge.create",
+          "auth.challenge.get",
+          "auth.challenge.delete",
+          "auth.passkey.create"
         ));
         role.getMetadata().put("default", true);
         return Optional.ofNullable(roleRepository.create(role));

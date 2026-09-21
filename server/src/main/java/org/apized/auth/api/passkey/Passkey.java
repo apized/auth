@@ -11,8 +11,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apized.auth.api.user.User;
 import org.apized.core.model.Apized;
+import org.apized.core.model.Action;
 import org.apized.core.model.BaseModel;
 import org.apized.core.model.Layer;
+import org.apized.core.security.annotation.Owner;
 
 import java.util.Map;
 import java.util.UUID;
@@ -31,6 +33,7 @@ import java.util.UUID;
 public class Passkey extends BaseModel {
   @JsonIgnore
   @ManyToOne
+  @Owner(actions = {Action.LIST, Action.GET, Action.CREATE, Action.DELETE})
   private User user;
 
   private String credentialId;

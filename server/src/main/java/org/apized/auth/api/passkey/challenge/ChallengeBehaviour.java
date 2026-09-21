@@ -8,6 +8,7 @@ import com.yubico.webauthn.data.*;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import lombok.SneakyThrows;
+import org.apized.auth.api.user.User;
 import org.apized.auth.api.user.UserRepository;
 import org.apized.auth.passkey.PasskeyConfig;
 import org.apized.auth.passkey.PasskeyCredentialService;
@@ -48,15 +49,14 @@ public class ChallengeBehaviour implements BehaviourHandler<Challenge> {
     challengeService.deleteByCreatedAtBefore(LocalDateTime.now().minusSeconds(TTL_SECONDS));
 
     if (ChallengeType.REGISTRATION == input.getType()) {
-      var userId = ApizedContext.getSecurity().getUser().getId();
-      var user = userRepository.get(userId).orElseThrow(() -> new BadRequestException("User not found"));
+      User user = userRepository.get(ApizedContext.getSecurity().getUser().getId()).orElseThrow(() -> new BadRequestException("User not found"));
 
       PublicKeyCredentialCreationOptions options = config.getRelyingParty().startRegistration(
         StartRegistrationOptions.builder()
           .user(UserIdentity.builder()
             .name(user.getUsername())
             .displayName(user.getName())
-            .id(PasskeyCredentialService.uuidToByteArray(userId))
+            .id(PasskeyCredentialService.uuidToByteArray(user.getId()))
             .build())
           .authenticatorSelection(
             AuthenticatorSelectionCriteria.builder()
@@ -67,7 +67,7 @@ public class ChallengeBehaviour implements BehaviourHandler<Challenge> {
           .build()
       );
 
-      input.setUserId(userId);
+      input.setUserId(user.getId());
       input.setPayload(objectMapper.writeValueAsString(options));
       input.setOptions(objectMapper.readValue(objectMapper.writeValueAsString(options), Map.class));
       input._getModelMetadata().getTouched().addAll(List.of("userId", "payload"));
