@@ -1,3 +1,7 @@
+micronaut:
+  server:
+    port: -1
+
 auth:
   passkey:
     rp-id: localhost
