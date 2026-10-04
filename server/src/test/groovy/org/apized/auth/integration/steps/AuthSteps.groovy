@@ -137,13 +137,42 @@ class AuthSteps extends AbstractSteps {
     context.addResponse('token', (response.statusCode() / 100 as int) == 2, response.asString(), null)
   }
 
-  @When('^I create an (expiring|non-expiring) token for ([^\\s]+)$')
-  void createTokenFor(String type, String user) {
+  @When('^I create an expiring token for ([^\\s]+)$')
+  void createTokenFor(String user) {
     String userId = testRunner.getUserId(user)
     Response response = testRunner.getClient(context)
       .body()
-      .post(context.eval("/tokens/$userId?expiring=${type == 'expiring'}").toString())
+      .post(context.eval("/tokens/$userId").toString())
     context.addResponse('token', (response.statusCode() / 100 as int) == 2, response.asString(), null)
+  }
+
+  @When('^I create an API key named "([^"]+)" as ([^\\s]+)$')
+  void createApiKey(String name, String alias) {
+    Response response = testRunner.getClient(context)
+      .body(JsonOutput.toJson([ name: name ]))
+      .post(context.eval('/apiKeys').toString())
+    context.addResponse('apiKey', (response.statusCode() / 100 as int) == 2, response.asString(), alias)
+  }
+
+  @When('^I get the API key ([^\\s]+)$')
+  void getApiKey(String id) {
+    Response response = testRunner.getClient(context)
+      .get(context.eval("/apiKeys/$id").toString())
+    context.addResponse('apiKey', (response.statusCode() / 100 as int) == 2, response.asString(), null)
+  }
+
+  @When('I list API keys')
+  void listApiKeys() {
+    Response response = testRunner.getClient(context)
+      .get(context.eval('/apiKeys').toString())
+    context.addResponse('apiKey', (response.statusCode() / 100 as int) == 2, response.asString(), null)
+  }
+
+  @When('^I delete the API key ([^\\s]+)$')
+  void deleteApiKey(String id) {
+    Response response = testRunner.getClient(context)
+      .delete(context.eval("/apiKeys/$id").toString())
+    context.addResponse('apiKey', (response.statusCode() / 100 as int) == 2, response.asString(), null)
   }
 
   @And('^the verification code for ([^\\s]+) is stored as ([^\\s]+)$')

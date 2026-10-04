@@ -47,7 +47,7 @@ class AuthUserResolverTest {
       }
 
       @Override
-      public Map<String, String> generateToken(String authorization, UUID userId, boolean expiring) {
+      public Map<String, String> generateToken(String authorization, UUID userId) {
         throw new IllegalStateException("auth service unavailable");
       }
     };

@@ -14,6 +14,12 @@ endpoints:
     port: 0
     enabled: false
 
+auth:
+  passkey:
+    rp-id: localhost
+    rp-name: Apized
+    origins: http://localhost:3000
+
 logger:
   levels:
     io.micronaut.context.condition: INFO

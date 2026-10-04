@@ -26,7 +26,7 @@ public class AuthUserResolver implements UserResolver {
   @Override
   @SneakyThrows
   public User getUser(String token) {
-    log.debug("Fetching user from token {}", token);
+    log.debug("Fetching user from credential");
     return client.getUser(
       String.format("Bearer %s", config.getToken()),
       Optional.ofNullable(token).orElse(" ")
@@ -45,11 +45,10 @@ public class AuthUserResolver implements UserResolver {
 
   @Override
   @SneakyThrows
-  public String generateToken(User user, boolean expiring) {
+  public String generateToken(User user, boolean ignored) {
     return client.generateToken(
       String.format("Bearer %s", config.getToken()),
-      user.getId(),
-      expiring
+      user.getId()
     ).get("token");
   }
 }

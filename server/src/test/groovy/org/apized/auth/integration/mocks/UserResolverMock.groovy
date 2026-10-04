@@ -36,6 +36,9 @@ class UserResolverMock extends AbstractMicronautUserResolverMock {
 
   @Override
   User getUser(String token) {
+    if (token?.startsWith('ak_')) {
+      return dbUserResolver.getUser(token)
+    }
     if (token != null) {
       Optional<org.apized.auth.api.user.User> user = userRepository.get(StringHelper.convertStringToUUID(token))
       if (user.isPresent()) {

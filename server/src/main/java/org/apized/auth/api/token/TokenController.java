@@ -169,17 +169,18 @@ public class TokenController {
     description = """
          Generate a token for the given user
       """)
-  public Token create(UUID userId, @QueryValue(defaultValue = "true") boolean expiring) {
+  public Token create(UUID userId) {
+    rejectApiKeySession();
     if (
-      (expiring && ApizedContext.getSecurity().getUser().getId().equals(userId)) ||
+      ApizedContext.getSecurity().getUser().getId().equals(userId) ||
         ApizedContext.getSecurity().getUser().isAllowed("auth.token.create")
     ) {
       return new Token(
         null,
-        userResolver.generateToken(AuthConverter.convertAuthUserToApizedUser(userService.get(userId)), expiring)
+        userResolver.generateToken(AuthConverter.convertAuthUserToApizedUser(userService.get(userId)), true)
       );
     } else {
-      throw new ForbiddenException("Not allowed to generate non-expiring tokens for other users", "auth.token.create");
+      throw new ForbiddenException("Not allowed to generate tokens for other users", "auth.token.create");
     }
   }
 
@@ -220,6 +221,10 @@ public class TokenController {
     description = """
       """)
   public HttpResponse<Token> renew(String jwt) {
+    rejectApiKeySession();
+    if (jwt.startsWith("ak_")) {
+      throw new BadRequestException("API keys cannot be renewed as JWTs");
+    }
     org.apized.core.security.model.User user = userResolver.getUser(jwt);
     if (
       !user.getId().equals(ApizedContext.getSecurity().getUser().getId()) &&
@@ -228,6 +233,12 @@ public class TokenController {
       throw new ForbiddenException("Not allowed to renew tokens for other users", "auth.token.renew");
     }
     return getHttpResponse(user);
+  }
+
+  private void rejectApiKeySession() {
+    if (ApizedContext.getSecurity().getUser().getMetadata().containsKey("apiKeyId")) {
+      throw new ForbiddenException("API keys cannot issue or renew JWTs", "auth.token.create");
+    }
   }
 
   private MutableHttpResponse<String> oauthLogin(String slug, String code, Map<String, Object> props) {

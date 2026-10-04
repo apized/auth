@@ -21,14 +21,13 @@ Feature: Redeem token
       | username | user@apized.org |
 
 
-  Scenario: Admin can redeem token for invalid user id (getting the anonymous user)
+  Scenario: Admin cannot redeem a JWT without an expiry
     Given There is a token for user user as token valid for 10 seconds
     And I login as administrator
     When I redeem the token eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhcGl6ZWQiLCJzdWIiOiI4MzMwOGJlMi1jOWI2LTQ0YzQtOGYzOC1iYjBmZGIxMDUxN2EiLCJpc3MiOiJhcGl6ZWQiLCJpYXQiOjE2Nzc3NzE5NTQsImp0aSI6IjFlNmQxYzQyLTZkYzctNDJkMi05NWQyLWMyZmJjNTJkNDE1YSJ9.WhgM4zBYP3PYs4z9OqAlGYo4GOSgkfG9IwKcNf9lwRA
-    Then the request succeeds
-    And the response contains
-      | name     | Anonymous            |
-      | username | anonymous@apized.org |
+    Then the request fails
+    And the response path "errors" contains element with
+      | message | MissingClaimException: The Claim 'exp' is not present in the JWT. |
 
   Scenario: Admin can redeem token for unverified user
     Given There is a token for user unverified as token valid for 10 seconds
