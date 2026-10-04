@@ -1,5 +1,19 @@
 Feature: Passkey Authentication
 
+  Scenario: Authentication challenge accepts an empty request body
+    Given I login as anonymous
+    When I start a passkey authentication challenge as authChallenge
+    Then the request succeeds
+    And the response contains
+      | challengeId | /.+/ |
+
+  Scenario: Authentication challenge accepts an optional username hint
+    Given I login as anonymous
+    When I start a passkey authentication challenge for username nobody@apized.org as authChallenge
+    Then the request succeeds
+    And the response contains
+      | challengeId | /.+/ |
+
   Scenario: User with a registered passkey can authenticate
     Given there is a user passkeyUser with
       | name     | Passkey User           |

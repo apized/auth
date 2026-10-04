@@ -3,8 +3,10 @@ package org.apized.auth.api.passkey;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.*;
+import io.micronaut.serde.ObjectMapper;
 import io.micronaut.http.cookie.CookieFactory;
 import io.micronaut.http.cookie.SameSite;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +24,7 @@ import org.apized.core.ApizedConfig;
 import org.apized.core.context.ApizedContext;
 import org.apized.core.error.exception.UnauthorizedException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,6 +42,9 @@ public class PasskeyController {
 
   @Inject
   PasskeyBehaviour passkeyBehaviour;
+
+  @Inject
+  ObjectMapper objectMapper;
 
   @Inject
   DBUserResolver userResolver;
@@ -88,12 +94,17 @@ public class PasskeyController {
     return passkeyService.create(passkey);
   }
 
-  @Post("/challenges/authentication")
+  @Post(value = "/challenges/authentication", consumes = MediaType.ALL)
   @Operation(operationId = "PasskeyAuthenticationChallenge", tags = {"Passkey"}, summary = "Start passkey authentication", description = "Returns a WebAuthn assertion challenge. Pass the 'options' field to navigator.credentials.get().")
-  public Map<String, Object> authenticationChallenge(@Nullable @Body Map<String, String> body) {
+  public Map<String, Object> authenticationChallenge(@Nullable @Body String body) throws IOException {
     Challenge challenge = new Challenge();
     challenge.setType(ChallengeType.AUTHENTICATION);
-    Optional.ofNullable(body).map(b -> b.get("username")).ifPresent(challenge::setUsername);
+    if (body != null && !body.isBlank()) {
+      Optional.ofNullable(objectMapper.readValue(body, Map.class).get("username"))
+        .map(Object::toString)
+        .filter(username -> !username.isBlank())
+        .ifPresent(challenge::setUsername);
+    }
     challenge._getModelMetadata().getTouched().add("type");
     Challenge created = challengeService.create(challenge);
     return Map.of("challengeId", created.getId(), "options", created.getOptions());

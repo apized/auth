@@ -55,8 +55,18 @@ class PasskeySteps extends AbstractSteps {
 
   @And('^I start a passkey authentication challenge as ([^\\s]+)$')
   void startPasskeyAuthenticationChallenge(String alias) {
-    Response response = testRunner.getClient(context)
-      .post(context.eval("/passkeys/challenges/authentication").toString())
+    requestPasskeyAuthenticationChallenge(alias, null)
+  }
+
+  @And('^I start a passkey authentication challenge for username ([^\\s]+) as ([^\\s]+)$')
+  void startPasskeyAuthenticationChallengeForUsername(String username, String alias) {
+    requestPasskeyAuthenticationChallenge(alias, [username: username])
+  }
+
+  private void requestPasskeyAuthenticationChallenge(String alias, Map<String, String> body) {
+    def request = testRunner.getClient(context)
+    if (body != null) request.body(JsonOutput.toJson(body))
+    Response response = request.post(context.eval("/passkeys/challenges/authentication").toString())
     boolean success = (response.statusCode() / 100 as int) == 2
     context.addResponse('challenge', success, response.asString(), alias)
     if (success) {
